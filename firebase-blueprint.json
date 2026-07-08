@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "booking": {
+      "title": "Booking",
+      "description": "A book a free session lead submission.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Prospect full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Prospect contact email"
+        },
+        "company": {
+          "type": "string",
+          "description": "Company or brand name"
+        },
+        "objective": {
+          "type": "string",
+          "description": "Primary business growth objective"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional details about marketing goals"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        }
+      },
+      "required": ["name", "email", "company", "objective"]
+    }
+  },
+  "firestore": {
+    "bookings/{bookingId}": {
+      "schema": "booking",
+      "description": "Leads submitted via the branded Book a Free Session form."
+    }
+  }
+}
