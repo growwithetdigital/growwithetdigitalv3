@@ -120,9 +120,6 @@ export default function WorkspaceHub({ isOpen, onClose }: WorkspaceHubProps) {
       });
     }
 
-    // Load standard Firestore bookings anyway
-    loadFirestoreBookings();
-
     return () => unsubscribe();
   }, []);
 
