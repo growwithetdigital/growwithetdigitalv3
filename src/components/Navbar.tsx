@@ -139,12 +139,12 @@ export default function Navbar({
         <div className="hidden md:flex items-center gap-3">
           <button
             onClick={onOpenBooking}
-            className="group relative inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-white font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
+            className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
             id="navbar-booking-btn"
           >
             <span className="relative z-10 flex items-center gap-1.5">
-              Book a Free Session
-              <ArrowUpRight className="w-3.5 h-3.5 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              Work with Us
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
           </button>
         </div>
@@ -224,11 +224,11 @@ export default function Navbar({
                 setMobileMenuOpen(false);
                 onOpenBooking();
               }}
-              className="flex items-center justify-center gap-2 w-full bg-slate-950 text-white font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md"
+              className="flex items-center justify-center gap-2 w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md transition-all"
               id="navbar-mobile-booking-btn"
             >
-              Book a Free Session
-              <ArrowUpRight className="w-4 h-4 text-white" />
+              Work with Us
+              <ArrowUpRight className="w-4 h-4 text-slate-950" />
             </button>
           </div>
         </div>

@@ -140,7 +140,7 @@ export default function Footer({
               id="footer-booking-btn"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Book a Free Session
+                Work with Us
                 <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </span>
             </button>

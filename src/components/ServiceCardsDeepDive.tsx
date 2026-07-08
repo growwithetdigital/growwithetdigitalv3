@@ -109,11 +109,11 @@ export default function ServiceCardsDeepDive({ onOpenBooking }: { onOpenBooking:
                 {/* Micro-focused call to action */}
                 <button
                   onClick={onOpenBooking}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-slate-950 hover:bg-slate-900 border border-slate-900 text-white font-mono text-[10px] font-extrabold uppercase tracking-widest py-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-mono text-[10px] font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
                   id="service-booking-btn"
                 >
-                  Book a Strategy Session
-                  <ArrowUpRight className="w-3.5 h-3.5 text-brand-cyan" />
+                  Work with Us
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-950" />
                 </button>
               </motion.div>
             );

@@ -80,7 +80,7 @@ export default function App() {
         onOpenBooking={handleOpenBooking}
         onOpenWorkspaceHub={() => setIsWorkspaceOpen(true)}
         onOpenCaseStudies={() => triggerToast("Case Studies Portfolio", "Our comprehensive client success metrics are currently undergoing verified compilation for our next release. Let's discuss your brand's growth plan directly.")}
-        onOpenTestimonials={() => triggerToast("Client Testimonials", "We are currently refresh-syncing our client review vault with Q1/Q2 partner letters. Book a session to learn about our verified results.")}
+        onOpenTestimonials={() => triggerToast("Client Testimonials", "We are currently refresh-syncing our client review vault with Q1/Q2 partner letters. Work with us to learn about our verified results.")}
       />
 
       {/* SECTION 2: Hero Engine */}
@@ -156,7 +156,7 @@ export default function App() {
                 }}
                 className="bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-[9px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer"
               >
-                Book Session
+                Work with Us
               </button>
               <button
                 onClick={() => setToast(null)}

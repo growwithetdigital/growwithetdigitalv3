@@ -142,7 +142,7 @@ ${formData.notes || 'No extra notes provided.'}
               <h2 style="color: #06b6d4; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; font-weight: 800;">ET DIGITAL GROWTH STRATEGY</h2>
               <p style="font-size: 16px; color: #1e293b;">Hello <strong>${formData.name}</strong>,</p>
               <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-                Thank you for booking your Free Growth Strategy Session with ET Digital. We have received your submission and initialized your custom strategy profile.
+                Thank you for initiating your inquiry with ET Digital. We have received your submission and initialized your custom profile.
               </p>
               <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <h3 style="margin-top: 0; color: #0f172a; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Your Profile:</h3>
@@ -163,7 +163,7 @@ ${formData.notes || 'No extra notes provided.'}
           
           await sendGmailMessage(
             formData.email,
-            'Your ET Digital Growth Strategy Session is Initiated',
+            'Your ET Digital Growth Inquiry is Initiated',
             emailBody
           );
           setStatus(prev => ({ ...prev, gmail: 'success' }));
@@ -217,7 +217,7 @@ ${formData.notes || 'No extra notes provided.'}
                 </div>
                 <div>
                   <h3 className="font-display text-lg font-black text-white uppercase tracking-wider">
-                    Book Growth Session
+                    Work with Us
                   </h3>
                   <p className="text-[10px] font-mono text-slate-400">ET DIGITAL BRANDED INTAKE</p>
                 </div>
@@ -238,7 +238,7 @@ ${formData.notes || 'No extra notes provided.'}
                   <Check className="w-8 h-8" />
                 </div>
                 <h4 className="font-display text-xl font-bold text-white mb-2">
-                  Strategy Session Initiated!
+                  Inquiry Initiated!
                 </h4>
                 <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto">
                   Thank you, {formData.name}. Your strategy profile has been registered successfully. We are reviewing your footprint.
@@ -417,7 +417,7 @@ ${formData.notes || 'No extra notes provided.'}
                     </>
                   ) : (
                     <>
-                      Confirm & Book Session
+                      Confirm & Connect
                     </>
                   )}
                 </button>
