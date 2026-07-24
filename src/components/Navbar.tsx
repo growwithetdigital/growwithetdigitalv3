@@ -5,17 +5,13 @@ import { Menu, X, ArrowUpRight, Settings } from 'lucide-react';
 interface NavbarProps {
   activeSection: string;
   onOpenBooking: () => void;
-  onOpenWorkspaceHub: () => void;
-  onOpenCaseStudies: () => void;
-  onOpenTestimonials: () => void;
+  onOpenWorkspaceHub?: () => void;
 }
 
 export default function Navbar({ 
   activeSection, 
   onOpenBooking, 
   onOpenWorkspaceHub,
-  onOpenCaseStudies,
-  onOpenTestimonials
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -81,7 +77,7 @@ export default function Navbar({
         </div>
 
         {/* Centered navigation links */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-7">
           <button
             onClick={() => handleNavClick('home')}
             className={`font-sans text-xs font-bold uppercase tracking-wider transition-colors hover:text-cyan-650 cursor-pointer ${
@@ -89,6 +85,15 @@ export default function Navbar({
             }`}
           >
             Home
+          </button>
+          <button
+            onClick={() => handleNavClick('growth-grader')}
+            className={`font-sans text-xs font-bold uppercase tracking-wider transition-colors hover:text-cyan-650 cursor-pointer flex items-center gap-1.5 ${
+              activeSection === 'growth-grader' ? 'text-cyan-650 font-extrabold' : 'text-slate-500'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse shrink-0" />
+            Free Auditor
           </button>
           <button
             onClick={() => handleNavClick('about')}
@@ -107,22 +112,20 @@ export default function Navbar({
             Services
           </button>
           <button
-            onClick={onOpenCaseStudies}
-            className="font-sans text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-cyan-650 transition-colors cursor-pointer"
-          >
-            Case Studies
-          </button>
-          <button
-            onClick={onOpenTestimonials}
-            className="font-sans text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-cyan-650 transition-colors cursor-pointer"
-          >
-            Testimonials
-          </button>
-          <button
             onClick={() => handleNavClick('instagram-feed')}
-            className="font-sans text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-cyan-650 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className={`font-sans text-xs font-bold uppercase tracking-wider transition-colors hover:text-cyan-650 cursor-pointer ${
+              activeSection === 'instagram-feed' ? 'text-cyan-650 font-extrabold' : 'text-slate-500'
+            }`}
           >
             Social Feed
+          </button>
+          <button
+            onClick={() => handleNavClick('faq')}
+            className={`font-sans text-xs font-bold uppercase tracking-wider transition-colors hover:text-cyan-650 cursor-pointer ${
+              activeSection === 'faq' ? 'text-cyan-650 font-extrabold' : 'text-slate-500'
+            }`}
+          >
+            FAQ
           </button>
           <a
             href={beehiivUrl}
@@ -136,7 +139,7 @@ export default function Navbar({
         </nav>
 
         {/* Right aligned call to action */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={onOpenBooking}
             className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
@@ -150,7 +153,7 @@ export default function Navbar({
         </div>
 
         {/* Mobile menu triggers */}
-        <div className="md:hidden flex items-center gap-3">
+        <div className="lg:hidden flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-slate-800 focus:outline-none cursor-pointer"
@@ -163,13 +166,22 @@ export default function Navbar({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-2xl py-6 px-6 flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-2xl py-6 px-6 flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="flex flex-col gap-4">
             <button
               onClick={() => handleNavClick('home')}
               className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer"
             >
               Home
+            </button>
+            <button
+              onClick={() => handleNavClick('growth-grader')}
+              className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer flex items-center justify-between"
+            >
+              <span>Free Auditor</span>
+              <span className="font-mono text-[9px] font-extrabold uppercase bg-brand-cyan/20 text-cyan-700 px-2 py-0.5 rounded-md">
+                Free Grade
+              </span>
             </button>
             <button
               onClick={() => handleNavClick('about')}
@@ -184,28 +196,16 @@ export default function Navbar({
               Services
             </button>
             <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenCaseStudies();
-              }}
-              className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer animate-none"
-            >
-              Case Studies
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenTestimonials();
-              }}
-              className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer animate-none"
-            >
-              Testimonials
-            </button>
-            <button
               onClick={() => handleNavClick('instagram-feed')}
               className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer"
             >
               Social Feed
+            </button>
+            <button
+              onClick={() => handleNavClick('faq')}
+              className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer"
+            >
+              FAQ
             </button>
             <a
               href={beehiivUrl}

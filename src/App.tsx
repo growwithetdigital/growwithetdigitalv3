@@ -8,8 +8,6 @@ import CreativeShowcase from './components/CreativeShowcase';
 import ComparisonSection from './components/ComparisonSection';
 import InstagramFeedGrid from './components/InstagramFeedGrid';
 import FounderBio from './components/FounderBio';
-import CaseStudies from './components/CaseStudies';
-import ClientTestimonials from './components/ClientTestimonials';
 import HowWeBuildGrowth from './components/HowWeBuildGrowth';
 import ServiceCardsDeepDive from './components/ServiceCardsDeepDive';
 import PlaybookLeadMagnet from './components/PlaybookLeadMagnet';
@@ -53,7 +51,7 @@ export default function App() {
   // Track active section for navbar highlights
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'services', 'insights-blog'];
+      const sections = ['hero', 'growth-grader', 'about', 'services', 'instagram-feed', 'faq', 'insights-blog'];
       const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
@@ -81,8 +79,6 @@ export default function App() {
         activeSection={activeSection} 
         onOpenBooking={handleOpenBooking}
         onOpenWorkspaceHub={() => setIsWorkspaceOpen(true)}
-        onOpenCaseStudies={() => triggerToast("Case Studies Portfolio", "Our comprehensive client success metrics are currently undergoing verified compilation for our next release. Let's discuss your brand's growth plan directly.")}
-        onOpenTestimonials={() => triggerToast("Client Testimonials", "We are currently refresh-syncing our client review vault with Q1/Q2 partner letters. Work with us to learn about our verified results.")}
       />
 
       {/* SECTION 2: Hero Engine */}
