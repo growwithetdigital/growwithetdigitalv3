@@ -18,19 +18,19 @@ interface CaseStudy {
 const caseStudies: CaseStudy[] = [
   {
     id: 1,
-    category: "Organic Search & SGE Domination",
+    category: "Organic Search & Google AI Domination",
     client: "Apex SaaS Platform",
-    title: "How We Captured 40%+ Share of Search in a Competitive B2B SaaS Sector",
+    title: "How We Captured 40%+ Share of Search in a Competitive B2B Sector",
     highlightMetric: "+280%",
     metricLabel: "Organic Demo Signups",
     challenge: "Apex was losing organic volume to bloated competitor directory sites and legacy publishers. They needed an editorial SEO framework capable of surviving search generative AI changes.",
-    strategy: "Implemented an 'Information Gain' content matrix, targeting intent clusters instead of single keywords. Developed premium first-party research assets and integrated SGE optimization protocols.",
+    strategy: "Implemented an 'Information Gain' content matrix, targeting intent clusters instead of single keywords. Developed premium first-party research assets and integrated Google AI search optimization protocols.",
     results: [
-      "Captured top-3 SGE response positions for 82 core commercial intent keywords",
+      "Captured top-3 Google AI search response positions for 82 core commercial intent keywords",
       "Grew organic product sign-ups by 280% in 5 months",
       "Reduced dependency on paid Google Ads from 74% down to 32%"
     ],
-    tags: ["SaaS Growth", "SGE Search Matrix", "Inbound Funnels"]
+    tags: ["SaaS Growth", "Google AI Search", "Inbound Funnels"]
   },
   {
     id: 2,

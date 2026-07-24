@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import SocialProofTicker from './components/SocialProofTicker';
+import GrowthAuditTool from './components/GrowthAuditTool';
 import CreativeShowcase from './components/CreativeShowcase';
+import ComparisonSection from './components/ComparisonSection';
 import InstagramFeedGrid from './components/InstagramFeedGrid';
 import FounderBio from './components/FounderBio';
 import CaseStudies from './components/CaseStudies';
@@ -89,6 +91,9 @@ export default function App() {
       {/* SECTION 4: Horizontal Social Proof Ticker */}
       <SocialProofTicker />
 
+      {/* SECTION 5: High-Converting Growth & AI Search Auditor Grader */}
+      <GrowthAuditTool onOpenBooking={handleOpenBooking} />
+
       {/* SECTION 6: High-Fidelity Creative Showcase (Dynamic Media Module) */}
       <CreativeShowcase />
 
@@ -100,6 +105,9 @@ export default function App() {
 
       {/* SECTION 7.5: How We Build Growth (Four-step process) */}
       <HowWeBuildGrowth />
+
+      {/* SECTION 7.8: Strategic Comparison (Traditional Agency vs. Growth OS Model) */}
+      <ComparisonSection />
 
       {/* SECTION 8: Service Card Deep-Dive Architecture */}
       <ServiceCardsDeepDive onOpenBooking={handleOpenBooking} />

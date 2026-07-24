@@ -11,8 +11,8 @@ interface FAQItem {
 const faqItems: FAQItem[] = [
   {
     id: 1,
-    question: "How does Search Generative Experience (SGE) impact SEO strategies in 2026?",
-    answer: "SGE is completely restructuring organic search. Instead of driving traffic to generic keyword-stuffed articles, Google's AI-generated snippets answers queries directly. To win, we build an 'Information Gain' strategy: creating proprietary research datasets, structuring Schema markup for LLM parsers, and creating direct-intent assets that AI engines cite as their authoritative knowledge sources."
+    question: "What is Google's AI Search (SGE) and how does it affect small businesses?",
+    answer: "SGE stands for Search Generative Experience. It is Google's new AI system that answers customer questions directly at the very top of the screen, instead of just showing a list of links. For a small business, this means if Google's AI doesn't cite your website in its summary, customers may never scroll down to find you. We make sure your business is optimized so Google's AI and other assistants (like ChatGPT and Claude) actively recommend your services."
   },
   {
     id: 2,
@@ -41,8 +41,8 @@ const faqItems: FAQItem[] = [
   },
   {
     id: 7,
-    question: "What are SGE-optimized content matrices?",
-    answer: "They are highly structured content architectures designed to answer complex multi-layered human queries. Rather than single articles for separate search terms, we build complete hub networks that address complex contextual questions. This ensures AI algorithms identify your brand as the dominant authority."
+    question: "How do we write website content that Google's AI and ChatGPT will actually recommend?",
+    answer: "Instead of writing standard blog posts or filling pages with repetitive keywords, we write focused, question-and-answer-style content that answers actual customer inquiries with absolute clarity. We package this inside invisible code tags (called Schema markup) so that when search engine bots crawl your site, they instantly understand your services and cite your business as the ultimate local authority."
   },
   {
     id: 8,
