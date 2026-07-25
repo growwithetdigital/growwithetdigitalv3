@@ -14,30 +14,31 @@ export default function SocialProofTicker() {
   const scrollLogos = [...logos, ...logos, ...logos, ...logos];
 
   return (
-    <section id="social-ticker" className="py-12 bg-[#0d0d0d] border-y border-white/[0.02] overflow-hidden relative select-none">
-      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0d0d0d] to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0d0d0d] to-transparent z-10 pointer-events-none" />
+    <section id="social-ticker" className="py-10 bg-slate-100 border-y-2 border-slate-300/80 overflow-hidden relative select-none shadow-inner">
+      {/* Side gradient fade masks matching light section background */}
+      <div className="absolute inset-y-0 left-0 w-20 sm:w-32 bg-gradient-to-r from-slate-100 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-20 sm:w-32 bg-gradient-to-l from-slate-100 to-transparent z-10 pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-6 mb-6 flex flex-col items-center text-center gap-1.5">
+      <div className="max-w-7xl mx-auto px-6 mb-5 flex flex-col items-center text-center gap-1">
         <div className="flex items-center gap-2 justify-center">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-          <h2 className="font-display text-xs font-black uppercase tracking-[0.25em] text-slate-100">
+          <span className="w-2 h-2 rounded-full bg-cyan-600 animate-pulse" />
+          <h2 className="font-display text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-slate-950">
             Staying Current
           </h2>
         </div>
-        <p className="font-sans text-[11px] text-slate-400 tracking-wide max-w-xl leading-relaxed">
+        <p className="font-sans text-xs text-slate-600 font-semibold tracking-wide max-w-xl leading-relaxed">
           The publications I read every week to stay ahead of what's actually working in marketing.
         </p>
       </div>
 
       <div className="flex overflow-hidden">
-        <div className="flex gap-16 items-center whitespace-nowrap animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused] py-3 cursor-pointer">
+        <div className="flex gap-12 sm:gap-16 items-center whitespace-nowrap animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused] py-2 cursor-pointer">
           {scrollLogos.map((logo, idx) => (
-            <div key={idx} className="flex items-center gap-3 shrink-0 group">
-              <span className="font-display text-sm sm:text-base font-black tracking-[0.25em] text-slate-600 group-hover:text-white transition-colors duration-300">
+            <div key={idx} className="flex items-center gap-2.5 shrink-0 group">
+              <span className="font-display text-sm sm:text-base font-black tracking-[0.2em] text-slate-900 group-hover:text-cyan-700 transition-colors duration-300">
                 {logo.name}
               </span>
-              <span className="font-mono text-[8px] font-bold text-slate-500 border border-slate-900 rounded px-1.5 py-0.5 bg-slate-900/50 shadow-sm group-hover:border-brand-cyan/30 group-hover:text-brand-cyan transition-colors duration-300">
+              <span className="font-mono text-[9px] font-extrabold text-slate-700 border border-slate-300 rounded-md px-2 py-0.5 bg-white shadow-sm group-hover:border-cyan-600 group-hover:bg-slate-950 group-hover:text-brand-cyan transition-colors duration-300">
                 {logo.industry}
               </span>
             </div>

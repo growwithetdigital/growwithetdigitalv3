@@ -327,8 +327,8 @@ export default function GrowthAuditTool({ onOpenBooking }: GrowthAuditToolProps)
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
                     100% Free & Confidential. No credit card required.
                   </span>
-                  <span className="font-mono text-[10px] text-slate-400">
-                    BENCHMARKED AGAINST TOP AGENCIES LIKE NP DIGITAL
+                  <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider">
+                    VALIDATED AGAINST ENTERPRISE DIGITAL PERFORMANCE BENCHMARKS
                   </span>
                 </div>
               </motion.div>

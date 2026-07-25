@@ -68,10 +68,10 @@ export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => vo
           </motion.div>
         </div>
 
-        {/* Right Side: Logo Animation (Vertically Centered) */}
-        <div className="w-full md:w-[52%] flex items-center justify-center py-8 md:py-0 relative min-h-[40vh] md:min-h-0">
+        {/* Right Side: Logo Animation (Vertically Centered & Lowered) */}
+        <div className="w-full md:w-[52%] flex items-center justify-center pt-8 pb-10 md:pt-14 md:pb-6 relative min-h-[40vh] md:min-h-0">
           <motion.div
-            className="w-full relative flex items-center justify-center"
+            className="w-full relative flex flex-col items-center justify-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
@@ -79,16 +79,16 @@ export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => vo
             {/* Glow Behind Animation */}
             <div className="absolute w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-brand-cyan/[0.04] rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Clean, Borderless Aspect-Square Player Frame with Rounded Corners */}
-            <div className="relative w-full aspect-square max-w-[420px] lg:max-w-[480px] rounded-3xl overflow-hidden bg-transparent flex items-center justify-center">
+            {/* Clean square logo container with rounded corners - no dark borders */}
+            <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl shadow-cyan-950/40">
               
-              {/* Native HTML5 Video for absolute borderless performance and transparency with rounded corners */}
+              {/* Native HTML5 Video rendering edge-to-edge as a rounded square without any outer dark borders */}
               <video
                 autoPlay
                 muted
                 loop
                 playsInline
-                className="w-full h-full absolute inset-0 object-cover pointer-events-none select-none mix-blend-screen scale-[1.05] rounded-3xl"
+                className="w-full h-full object-cover pointer-events-none select-none rounded-3xl"
               >
                 <source 
                   src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.mp4" 
@@ -98,10 +98,10 @@ export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => vo
                   src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.webm" 
                   type="video/webm" 
                 />
-                {/* Fallback to iframe if the native streaming formats are blocked */}
+                {/* Fallback to iframe if native streaming formats are blocked */}
                 <iframe
                   src="https://player.cloudinary.com/embed/?cloud_name=dnpvgq7gt&public_id=Here_is_my_logo._instructions_202606260400_woxxvs&player[autoplay]=true&player[muted]=true&player[loop]=true&player[controls]=false&player[show_logo]=false&player[skin]=dark"
-                  className="w-full h-full absolute inset-0 border-0 pointer-events-none select-none mix-blend-screen scale-[1.05] rounded-3xl"
+                  className="w-full h-full border-0 pointer-events-none select-none rounded-3xl"
                   allow="autoplay; encrypted-media"
                   title="ET Digital Brand Logo Animation"
                   referrerPolicy="no-referrer"
@@ -110,7 +110,7 @@ export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => vo
             </div>
 
             {/* ENGAGE.CONVERT.GROW. Tagline */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center font-mono text-[9px] tracking-[0.25em] font-black uppercase select-none whitespace-nowrap">
+            <div className="mt-5 flex items-center font-mono text-[9px] tracking-[0.25em] font-black uppercase select-none whitespace-nowrap">
               <span className="text-white">ENGAGE.</span>
               <span className="text-white">CONVERT.</span>
               <span className="text-brand-cyan">GROW.</span>

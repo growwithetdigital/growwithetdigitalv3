@@ -67,29 +67,35 @@ export default function HowWeBuildGrowth() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: idx * 0.12 }}
-                  className="relative bg-slate-900/20 backdrop-blur-md border border-slate-850/80 rounded-3xl p-8 transition-all duration-500 group overflow-hidden hover:border-brand-cyan/40 hover:bg-slate-900/60 hover:shadow-[0_0_30px_rgba(6,182,212,0.12)]"
+                  className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-700/90 rounded-3xl p-8 transition-all duration-500 group overflow-hidden hover:border-brand-cyan hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] shadow-xl"
                 >
+                  {/* Top Cyan Accent Line */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-cyan via-cyan-300 to-brand-cyan opacity-80 group-hover:opacity-100 transition-opacity" />
+
                   {/* Step indicator in back */}
-                  <div className="absolute -top-4 -right-2 font-display text-8xl font-black text-slate-900/50 select-none pointer-events-none transition-all duration-500 group-hover:text-brand-cyan/10 group-hover:scale-105">
+                  <div className="absolute -top-3 -right-1 font-display text-8xl font-black text-slate-700/40 select-none pointer-events-none transition-all duration-500 group-hover:text-brand-cyan/20 group-hover:scale-105">
                     {item.step}
                   </div>
 
-                  {/* Top-to-bottom hover gradient bar */}
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-brand-cyan/0 to-transparent transition-all duration-500 group-hover:via-brand-cyan/60" />
-
                   <div className="relative z-10">
-                    {/* Icon Badge */}
-                    <div className="p-4 bg-slate-950 rounded-2xl inline-block mb-8 border border-slate-850 transition-all duration-500 group-hover:border-brand-cyan/30 group-hover:bg-brand-cyan/5 text-slate-300 group-hover:text-brand-cyan shadow-inner">
-                      <Icon className="w-6 h-6 stroke-[1.5]" />
+                    {/* Header Row: Icon Badge + Step Pill */}
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="p-3.5 bg-slate-950 rounded-2xl border-2 border-brand-cyan/50 text-brand-cyan shadow-lg shadow-cyan-950/50 transition-transform duration-500 group-hover:scale-110 group-hover:border-brand-cyan">
+                        <Icon className="w-6 h-6 stroke-[2]" />
+                      </div>
+
+                      <span className="font-mono text-[10px] font-black uppercase tracking-wider text-slate-950 bg-brand-cyan px-3 py-1 rounded-full shadow-md shadow-cyan-950/40">
+                        PHASE {item.step}
+                      </span>
                     </div>
 
                     {/* Step Name */}
-                    <h3 className="font-display text-xl font-black text-white mb-3 uppercase tracking-tight transition-colors duration-500 group-hover:text-brand-cyan">
+                    <h3 className="font-display text-2xl font-black text-white mb-3 uppercase tracking-tight transition-colors duration-500 group-hover:text-brand-cyan">
                       {item.title}
                     </h3>
 
                     {/* Step Description */}
-                    <p className="font-sans text-xs sm:text-sm text-slate-400 leading-relaxed">
+                    <p className="font-sans text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
                       {item.description}
                     </p>
                   </div>

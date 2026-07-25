@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
   Heart, MessageCircle, ArrowUpRight, Check, TrendingUp, BarChart3, 
   Quote, Share2, Compass, Users, Target, Phone, Sparkles, 
   AlertCircle, MessageSquare, ArrowUp, MousePointerClick, Calendar
 } from 'lucide-react';
+import SocialLinktreeModal from './SocialLinktreeModal';
 
 // Custom high-fidelity SVGs for social platforms
 const LinkedInIcon = () => (
@@ -59,6 +60,7 @@ interface InstagramFeedGridProps {
 }
 
 export default function InstagramFeedGrid({ onOpenBooking }: InstagramFeedGridProps) {
+  const [isSocialHubOpen, setIsSocialHubOpen] = useState(false);
   const instagramUrl = "https://www.instagram.com/growwithetdigital?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr";
 
   const posts: SocialPost[] = [
@@ -600,19 +602,55 @@ export default function InstagramFeedGrid({ onOpenBooking }: InstagramFeedGridPr
           ))}
         </div>
 
-        {/* Call to action (Direct Booking Focus instead of Playbook tease) */}
-        {onOpenBooking && (
-          <div className="max-w-xl mx-auto text-center">
-            <button
-              onClick={onOpenBooking}
-              className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shadow-cyan-950/40"
-            >
-              <Calendar className="w-4 h-4 mr-2 text-slate-950" />
-              <span>Book Your Free Growth Strategy Session</span>
-              <ArrowUpRight className="w-3.5 h-3.5 ml-2 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
+        {/* Call to action encouraging people to follow us across channels */}
+        <div className="max-w-2xl mx-auto text-center space-y-4 pt-4">
+          <div className="p-8 sm:p-10 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-cyan via-cyan-400 to-brand-cyan" />
+            
+            <span className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-brand-cyan bg-cyan-950/80 border border-brand-cyan/30 px-3.5 py-1.5 rounded-full inline-block mb-3">
+              JOIN THE COMMUNITY @GROWWITHETDIGITAL
+            </span>
+
+            <h3 className="font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-2">
+              Follow Us For Daily Growth Playbooks
+            </h3>
+
+            <p className="font-sans text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+              Connect with us across all social media channels for actionable growth tactics, real-time strategy updates, and direct conversion playbooks.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => setIsSocialHubOpen(true)}
+                className="w-full sm:w-auto group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-8 py-4 rounded-xl transition-all shadow-xl shadow-cyan-950/50 active:scale-95 cursor-pointer"
+              >
+                <Share2 className="w-4 h-4 mr-2 text-slate-950" />
+                <span>Follow Us @growwithetdigital</span>
+                <ArrowUpRight className="w-3.5 h-3.5 ml-2 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </button>
+
+              {onOpenBooking && (
+                <button
+                  onClick={onOpenBooking}
+                  className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-slate-200 border border-slate-800 font-display text-xs font-bold uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer"
+                >
+                  <Calendar className="w-4 h-4 mr-2 text-brand-cyan" />
+                  <span>Book Strategy Call</span>
+                </button>
+              )}
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Linktree Social Landing Page Modal */}
+        <SocialLinktreeModal 
+          isOpen={isSocialHubOpen} 
+          onClose={() => setIsSocialHubOpen(false)} 
+          onOpenBooking={() => {
+            setIsSocialHubOpen(false);
+            if (onOpenBooking) onOpenBooking();
+          }} 
+        />
 
       </div>
     </section>
