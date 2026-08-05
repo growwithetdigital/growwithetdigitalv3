@@ -190,7 +190,7 @@ export default function FounderBio() {
                   </button>
 
                   <a
-                    href="mailto:contactETdigital@gmail.com"
+                    href="mailto:hello@growwithetdigital.com"
                     className="group inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                   >
                     <Mail className="w-4 h-4 mr-2 text-slate-950 animate-pulse" />

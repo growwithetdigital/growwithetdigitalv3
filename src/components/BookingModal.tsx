@@ -161,11 +161,34 @@ ${formData.notes || 'No extra notes provided.'}
             </div>
           `.trim();
           
+          // Send confirmation to client
           await sendGmailMessage(
             formData.email,
             'Your ET Digital Growth Inquiry is Initiated',
             emailBody
           );
+
+          // Send lead alert notification to internal inbox
+          const adminNotificationBody = `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #06b6d4; border-radius: 12px; background-color: #0f172a; color: #ffffff;">
+              <h2 style="color: #06b6d4; border-bottom: 2px solid #334155; padding-bottom: 10px; font-weight: 800; margin-top: 0;">NEW LEAD SUBMISSION</h2>
+              <p style="font-size: 15px; color: #e2e8f0;">A new strategy consultation inquiry was submitted via the website form.</p>
+              <div style="background-color: #1e293b; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #334155;">
+                <p style="margin: 6px 0;"><strong>Name:</strong> ${formData.name}</p>
+                <p style="margin: 6px 0;"><strong>Email:</strong> <a href="mailto:${formData.email}" style="color: #38bdf8;">${formData.email}</a></p>
+                <p style="margin: 6px 0;"><strong>Company:</strong> ${formData.company}</p>
+                <p style="margin: 6px 0;"><strong>Objective:</strong> ${formData.objective}</p>
+                <p style="margin: 6px 0;"><strong>Notes:</strong> ${formData.notes || 'None provided.'}</p>
+              </div>
+            </div>
+          `.trim();
+
+          await sendGmailMessage(
+            'hello@growwithetdigital.com',
+            `New Strategy Lead: ${formData.name} (${formData.company})`,
+            adminNotificationBody
+          );
+
           setStatus(prev => ({ ...prev, gmail: 'success' }));
         } catch (err) {
           console.error('Gmail Sync Error:', err);
