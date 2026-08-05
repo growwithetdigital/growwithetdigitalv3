@@ -157,11 +157,11 @@ export default function Footer({
 
               <div className="space-y-2 text-xs pt-2">
                 <a 
-                  href="mailto:contactetdigital@gmail.com" 
+                  href="mailto:hello@growwithetdigital.com" 
                   className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
                   <Mail className="w-4 h-4 text-brand-cyan/70" />
-                  contactetdigital@gmail.com
+                  hello@growwithetdigital.com
                 </a>
                 <div className="flex items-center gap-2 text-slate-400 font-sans">
                   <MapPin className="w-4 h-4 text-brand-cyan/70" />
@@ -232,7 +232,7 @@ export default function Footer({
               </a>
               {/* Facebook */}
               <a 
-                href="https://facebook.com/growwithetdigital" 
+                href="https://www.facebook.com/profile.php?id=61591454055463" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
@@ -242,7 +242,7 @@ export default function Footer({
               </a>
               {/* LinkedIn */}
               <a 
-                href="https://linkedin.com/company/growwithetdigital" 
+                href="https://www.linkedin.com/in/ericlamarthomas/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
@@ -252,17 +252,17 @@ export default function Footer({
               </a>
               {/* Google */}
               <a 
-                href="https://google.com/search?q=growwithetdigital" 
+                href="https://share.google/0jYYGdh1VnwiDk7t5" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
-                title="Google"
+                title="Google Business Profile"
               >
                 <GoogleIcon className="w-4 h-4" />
               </a>
               {/* Pinterest */}
               <a 
-                href="https://pinterest.com/growwithetdigital" 
+                href="https://www.pinterest.com/contactetdigital/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
@@ -272,7 +272,7 @@ export default function Footer({
               </a>
               {/* YouTube */}
               <a 
-                href="https://youtube.com/@growwithetdigital" 
+                href="https://www.youtube.com/channel/UCX1zWznbP9tr8OhXxmVM_dQ" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
@@ -282,7 +282,7 @@ export default function Footer({
               </a>
               {/* X */}
               <a 
-                href="https://x.com/growwithetdigital" 
+                href="https://x.com/etdigitalonx" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"
@@ -292,7 +292,7 @@ export default function Footer({
               </a>
               {/* Reddit */}
               <a 
-                href="https://reddit.com/r/growwithetdigital" 
+                href="https://www.reddit.com/user/growwithetdigital/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan transition-all"

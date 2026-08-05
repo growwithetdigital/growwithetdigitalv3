@@ -93,7 +93,7 @@ export default function LegalModals({ isOpen, onClose, type }: LegalModalProps) 
                 <div className="space-y-2">
                   <p className="font-medium text-white text-sm sm:text-base">4. Data Control & Unsubscribe Rights</p>
                   <p className="font-light leading-relaxed text-slate-400">
-                    You maintain complete authority over your digital footprint. Every newsletter contains an instantaneous unsubscribe link. You may request absolute removal of your booking data at any time by emailing contactetdigital@gmail.com.
+                    You maintain complete authority over your digital footprint. Every newsletter contains an instantaneous unsubscribe link. You may request absolute removal of your booking data at any time by emailing <a href="mailto:hello@growwithetdigital.com" className="text-brand-cyan hover:underline">hello@growwithetdigital.com</a>.
                   </p>
                 </div>
 
@@ -137,7 +137,7 @@ export default function LegalModals({ isOpen, onClose, type }: LegalModalProps) 
                 <div className="space-y-2">
                   <p className="font-medium text-white text-sm sm:text-base">5. Contact Information</p>
                   <p className="font-light leading-relaxed text-slate-400">
-                    For inquiries regarding security certifications, data storage configurations, or system-level NDAs, please contact: <span className="text-brand-cyan">contactetdigital@gmail.com</span>.
+                    For inquiries regarding security certifications, data storage configurations, or system-level NDAs, please contact: <a href="mailto:hello@growwithetdigital.com" className="text-brand-cyan hover:underline">hello@growwithetdigital.com</a>.
                   </p>
                 </div>
               </>

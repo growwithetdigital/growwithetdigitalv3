@@ -156,7 +156,7 @@ ${formData.notes || 'No extra notes provided.'}
               </p>
               <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;" />
               <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-                ET Digital Inc. &bull; Los Angeles, CA &bull; contactetdigital@gmail.com
+                ET Digital Inc. &bull; Los Angeles, CA &bull; hello@growwithetdigital.com
               </p>
             </div>
           `.trim();
