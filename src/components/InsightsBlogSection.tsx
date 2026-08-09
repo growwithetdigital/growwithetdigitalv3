@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import googleSearchShiftImg from '../assets/images/google_search_shift_1786291751268.jpg';
+import revenueMetricsImg from '../assets/images/revenue_metrics_1786291769449.jpg';
+import growthSystemEngineImg from '../assets/images/stop_content_system_clean_1786293327281.jpg';
 
 export default function InsightsBlogSection() {
   const beehiivUrl = "https://growwithetdigital.beehiiv.com";
@@ -14,7 +17,7 @@ export default function InsightsBlogSection() {
       summary: "AI answer engines are replacing the search bar as the first place buyers look for recommendations — and most websites are invisible to them. We break down what's actually driving visibility in the answer engine era, and the one structural fix most sites are missing.",
       date: 'Jul 2026',
       readTime: '5 Min Read',
-      imageUrl: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=800',
+      imageUrl: googleSearchShiftImg,
       badgeColor: 'text-brand-cyan bg-slate-950/90 border-brand-cyan/40'
     },
     {
@@ -25,7 +28,7 @@ export default function InsightsBlogSection() {
       summary: 'Impressions and follower counts feel productive but rarely move revenue. We walk through the single metric inside every GOS client dashboard that actually predicts pipeline — and why most reporting hides it.',
       date: 'Jul 2026',
       readTime: '4 Min Read',
-      imageUrl: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=800',
+      imageUrl: revenueMetricsImg,
       badgeColor: 'text-emerald-400 bg-slate-950/90 border-emerald-500/40'
     },
     {
@@ -36,7 +39,7 @@ export default function InsightsBlogSection() {
       summary: 'Posting more is not a strategy — it\'s a treadmill. We outline the difference between a content calendar and an actual growth system, and the one architectural shift that stops the "post and pray" cycle for good.',
       date: 'Jul 2026',
       readTime: '6 Min Read',
-      imageUrl: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800',
+      imageUrl: growthSystemEngineImg,
       badgeColor: 'text-cyan-300 bg-slate-950/90 border-cyan-400/40'
     }
   ];

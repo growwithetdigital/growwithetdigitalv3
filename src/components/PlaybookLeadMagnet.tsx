@@ -282,13 +282,11 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                         Ready to implement these 10 strategies for <strong className="text-slate-900 font-semibold">{formData.company || 'your business'}</strong>?
                       </p>
                       <a
-                        href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=ET+Digital+Free+AI+Growth+Audit&details=1-on-1+Executive+AI+Growth+Audit+with+ET+Digital.+Analyze+your+local+AI+search+discoverability,+conversion+funnel,+and+growth+roadmap.&location=Google+Meet"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="mailto:hello@growwithetdigital.com"
                         className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-700 text-white font-display text-xs sm:text-sm font-bold uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer text-center"
                       >
-                        <Calendar className="w-4 h-4 text-white shrink-0" />
-                        <span>Work With Us on Google Calendar →</span>
+                        <Mail className="w-4 h-4 text-white shrink-0" />
+                        <span>Lets Connect</span>
                       </a>
                     </div>
                   </div>

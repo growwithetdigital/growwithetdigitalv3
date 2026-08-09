@@ -710,8 +710,8 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
     bulletY += 5.5;
   });
 
-  // Call to action button box with generous width so NO text gets cut off
-  const ctaBtnWidth = 110;
+  // Call to action button box with clean width and perfectly centered text
+  const ctaBtnWidth = 85;
   const ctaBtnHeight = 11;
   const ctaBtnX = margin + (contentWidth - ctaBtnWidth) / 2;
   const ctaBtnY = page13Y + 75;
@@ -722,7 +722,7 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
-  doc.text('WORK WITH US →', ctaBtnX + 22, ctaBtnY + 7.5);
+  doc.text('WORK WITH US', pageWidth / 2, ctaBtnY + 7.2, { align: 'center' });
 
   // Hyperlink directly to Google Calendar Appointment Schedule
   doc.link(ctaBtnX, ctaBtnY, ctaBtnWidth, ctaBtnHeight, { url: GOOGLE_CALENDAR_AUDIT_URL });
