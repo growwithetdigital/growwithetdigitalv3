@@ -47,7 +47,7 @@ export default function PDFPreviewModal({
 
           <div className="flex items-center gap-2">
             <a
-              href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=ET+Digital+Free+AI+Growth+Audit&details=1-on-1+Executive+AI+Growth+Audit+with+ET+Digital+Agency.+Analyze+your+local+AI+search+discoverability,+conversion+funnel,+and+growth+roadmap.&location=Google+Meet"
+              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-sm whitespace-nowrap cursor-pointer"

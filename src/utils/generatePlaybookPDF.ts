@@ -5,7 +5,7 @@ export interface UserFormData {
 }
 
 const COVER_IMAGE_URL = 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1783367304/ChatGPT_Image_final_Jul_6_2026_12_45_53_PM_eclb47.png';
-export const GOOGLE_CALENDAR_AUDIT_URL = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=ET+Digital+Free+AI+Growth+Audit&details=1-on-1+Executive+AI+Growth+Audit+with+ET+Digital+Agency.+Analyze+your+local+AI+search+discoverability,+conversion+funnel,+and+growth+roadmap.&location=Google+Meet';
+export const GOOGLE_CALENDAR_AUDIT_URL = 'https://calendar.app.google/Eg21vAqWrJN1j358A';
 
 async function getBase64ImageFromUrl(url: string): Promise<string | null> {
   if (typeof window === 'undefined') return null;
