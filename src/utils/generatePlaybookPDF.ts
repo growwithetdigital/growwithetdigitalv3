@@ -261,13 +261,16 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
-  doc.text('ET DIGITAL AGENCY', margin, coverFooterY + 9);
+  doc.text('ET DIGITAL', margin, coverFooterY + 9);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(148, 163, 184);
-  doc.text('Growth Architecture, Local SEO & AI Search Engineering  |  etdigital.com', margin, coverFooterY + 16);
+  doc.text('Growth Architecture, Local SEO & AI Search Engineering  |  growwithetdigital.com', margin, coverFooterY + 16);
   doc.text(`Official Executive Strategy Guide  |  2026 Edition`, margin, coverFooterY + 22);
+
+  // Hyperlink growwithetdigital.com on cover
+  doc.link(margin + 90, coverFooterY + 12, 45, 6, { url: 'https://growwithetdigital.com' });
 
 
   // ==========================================
@@ -735,13 +738,16 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(15, 23, 42);
-  doc.text('ET Digital Agency', margin, page13Y);
+  doc.text('ET Digital', margin, page13Y);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
   doc.text('Growth Architecture, Local SEO & AI Search Engineering', margin, page13Y + 5);
-  doc.text('Web: https://etdigital.com   |   Email: hello@etdigital.com', margin, page13Y + 10);
+  doc.text('Web: https://growwithetdigital.com   |   Email: hello@growwithetdigital.com', margin, page13Y + 10);
+
+  // Hyperlink growwithetdigital.com on page 13 footer
+  doc.link(margin, page13Y + 7, 45, 5, { url: 'https://growwithetdigital.com' });
 
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7.5);

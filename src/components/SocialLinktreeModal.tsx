@@ -199,24 +199,7 @@ export default function SocialLinktreeModal({
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-cyan via-cyan-300 to-brand-cyan" />
 
           {/* Header Controls */}
-          <div className="p-5 flex items-center justify-between border-b border-slate-900">
-            <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all text-xs font-mono font-semibold cursor-pointer"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Link Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>Share Hub</span>
-                </>
-              )}
-            </button>
-
+          <div className="p-5 flex items-center justify-end border-b border-slate-900">
             <button
               onClick={onClose}
               className="p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
