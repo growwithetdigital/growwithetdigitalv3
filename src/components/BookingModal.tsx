@@ -260,82 +260,30 @@ ${formData.notes || 'No extra notes provided.'}
                 <div className="w-16 h-16 bg-cyan-950 border border-brand-cyan/30 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-cyan shadow-lg shadow-cyan-950/50">
                   <Check className="w-8 h-8" />
                 </div>
-                <h4 className="font-display text-xl font-bold text-white mb-2">
-                  Message Sent!
+                <h4 className="font-display text-2xl font-black text-white mb-2">
+                  Connection Sent!
                 </h4>
-                <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto">
-                  Thank you, {formData.name}. Your inquiry has been sent to hello@growwithetdigital.com. Our team will review and follow up with you shortly.
+                <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto leading-relaxed">
+                  Thank you, <strong className="text-white">{formData.name}</strong>. Your connection request and message have been sent to <strong className="text-brand-cyan">hello@growwithetdigital.com</strong>. Our team will review your details and reach back out shortly.
                 </p>
 
-                {/* Real-time synchronization pipeline trace */}
-                <div className="bg-slate-950/75 border border-slate-800/80 rounded-xl p-4 text-left font-mono text-[10px] space-y-2.5 max-w-sm mx-auto">
-                  <span className="text-slate-500 block uppercase tracking-wider font-extrabold text-[9px] mb-1">
-                    System Integration Pipeline:
-                  </span>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-300">
-                      <Database className="w-3.5 h-3.5 text-cyan-400" />
-                      Cloud Firestore
-                    </span>
-                    <span className="text-brand-cyan font-bold">● SYNCHRONIZED</span>
+                <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left font-sans text-xs text-slate-300 space-y-1.5 max-w-sm mx-auto mb-6">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                    <Check className="w-4 h-4 shrink-0" />
+                    <span>Inquiry Logged & Delivered</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-300">
-                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                      Google Sheets
-                    </span>
-                    {status.sheets === 'success' ? (
-                      <span className="text-emerald-400 font-bold">● ROW APPENDED</span>
-                    ) : status.sheets === 'running' ? (
-                      <span className="text-amber-400 flex items-center gap-1">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> SYNCING
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">● LOCAL ONLY</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-300">
-                      <FileText className="w-3.5 h-3.5 text-blue-400" />
-                      Google Drive
-                    </span>
-                    {status.drive === 'success' ? (
-                      <span className="text-blue-400 font-bold">● BRIEF SAVED</span>
-                    ) : status.drive === 'running' ? (
-                      <span className="text-amber-400 flex items-center gap-1">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> SYNCING
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">● LOCAL ONLY</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-300">
-                      <Mail className="w-3.5 h-3.5 text-rose-400" />
-                      Gmail API Mailer
-                    </span>
-                    {status.gmail === 'success' ? (
-                      <span className="text-rose-400 font-bold">● CONFIRMATION SENT</span>
-                    ) : status.gmail === 'running' ? (
-                      <span className="text-amber-400 flex items-center gap-1">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> SENDING
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">● UNLINKED</span>
-                    )}
-                  </div>
+                  <p className="text-[11px] text-slate-400 leading-normal pl-6">
+                    A confirmation notification has been dispatched to hello@growwithetdigital.com.
+                  </p>
                 </div>
 
                 <button 
                   onClick={onClose}
-                  className="mt-6 w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-3 rounded-xl transition-all cursor-pointer"
+                  className="w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                   id="success-dismiss-btn"
                 >
-                  Return to Hub
+                  <X className="w-4 h-4 text-slate-950" />
+                  <span>Close Window</span>
                 </button>
               </div>
             ) : (
@@ -436,11 +384,11 @@ ${formData.notes || 'No extra notes provided.'}
                   {status.submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                      Sending Message...
+                      Sending Connection...
                     </>
                   ) : (
                     <>
-                      Send Email to hello@growwithetdigital.com
+                      Confirm & Connect
                     </>
                   )}
                 </button>
