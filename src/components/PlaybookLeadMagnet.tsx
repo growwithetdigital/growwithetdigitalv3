@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Download, CheckCircle2, User, Mail, Building2, Eye, Calendar, Sparkles, FileText, Send } from 'lucide-react';
+import { Download, CheckCircle2, User, Mail, Building2, Eye, Calendar, Sparkles, FileText, Send, ExternalLink } from 'lucide-react';
 import { generatePlaybookPDF } from '../utils/generatePlaybookPDF';
 import PDFPreviewModal from './PDFPreviewModal';
 import { submitPlaybookLeadToFirestore, sendGmailMessage } from '../lib/firebase';
@@ -17,6 +17,8 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  const googleFormRef = useRef<HTMLFormElement>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email) return;
@@ -24,7 +26,28 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
     setIsLoading(true);
 
     try {
-      // 1. Generate PDF document
+      // 1. Submit lead details directly to Eric's Google Form in background
+      if (googleFormRef.current) {
+        try {
+          googleFormRef.current.submit();
+        } catch (gErr) {
+          console.warn('Google Form iframe submission note:', gErr);
+        }
+      }
+
+      const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdRlFbZaX9JRgEwonxiQY_B7lFHsQzeJwshgn3oG7CC0atGNw/formResponse';
+      const googleFormData = new FormData();
+      googleFormData.append('entry.613580250', formData.name);
+      googleFormData.append('entry.1504758920', formData.email);
+      googleFormData.append('entry.707786207', formData.company || '');
+
+      fetch(googleFormUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: googleFormData
+      }).catch((err) => console.warn('Google Form fetch submission note:', err));
+
+      // 2. Generate PDF document
       const doc = await generatePlaybookPDF({
         name: formData.name,
         email: formData.email,
@@ -36,15 +59,15 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
       setPdfBlobUrl(url);
       setPdfDoc(doc);
 
-      // 2. Trigger browser download immediately
+      // 3. Trigger browser download immediately
       const safeFilename = `ET_Digital_Growth_Playbook_${formData.name.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
       doc.save(safeFilename);
 
-      // 3. Immediately switch UI to Confirmation and Thank You state (prevents button sticking on "Preparing Playbook...")
+      // 4. Immediately switch UI to Confirmation and Thank You state
       setIsSubmitted(true);
       setIsLoading(false);
 
-      // 4. Save Lead & Send Notification Email in background
+      // 5. Save Lead & Send Notification Email in background
       submitPlaybookLeadToFirestore({
         name: formData.name,
         email: formData.email,
@@ -154,6 +177,20 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
 
           {/* Form Section - Positioned directly underneath the image */}
           <div className="w-full max-w-xl mt-4">
+            {/* Hidden Target Iframe & Form for Google Forms POST submission */}
+            <iframe name="hidden_google_form_iframe" id="hidden_google_form_iframe" style={{ display: 'none' }} />
+            <form
+              ref={googleFormRef}
+              action="https://docs.google.com/forms/d/e/1FAIpQLSdRlFbZaX9JRgEwonxiQY_B7lFHsQzeJwshgn3oG7CC0atGNw/formResponse"
+              method="POST"
+              target="hidden_google_form_iframe"
+              style={{ display: 'none' }}
+            >
+              <input type="text" name="entry.613580250" value={formData.name} readOnly />
+              <input type="email" name="entry.1504758920" value={formData.email} readOnly />
+              <input type="text" name="entry.707786207" value={formData.company} readOnly />
+            </form>
+
             <AnimatePresence mode="wait">
               {!isSubmitted ? (
                 <motion.form 
@@ -211,7 +248,7 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                   </div>
 
                   {/* Single Submit Button */}
-                  <div className="flex justify-center pt-2">
+                  <div className="flex flex-col items-center gap-2 pt-2">
                     <button
                       type="submit"
                       disabled={isLoading}
@@ -222,6 +259,7 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                         {!isLoading && <Download className="w-4 h-4 text-brand-cyan group-hover:translate-y-0.5 transition-transform" />}
                       </span>
                     </button>
+                    <span className="text-[11px] text-slate-400 font-sans">Free instant PDF download • Instant access</span>
                   </div>
                 </motion.form>
               ) : (
@@ -236,10 +274,7 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                       <CheckCircle2 className="w-9 h-9" />
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] font-black uppercase tracking-widest text-brand-cyan bg-cyan-50 px-3.5 py-1 rounded-full border border-cyan-100/80">
-                        Thank You from ET Digital
-                      </span>
-                      <h4 className="font-display text-2xl sm:text-3xl font-black text-slate-950 tracking-tight mt-3 mb-2">
+                      <h4 className="font-display text-2xl sm:text-3xl font-black text-slate-950 tracking-tight mt-1 mb-2">
                         Thank You, {formData.name}!
                       </h4>
                       <p className="font-sans text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
@@ -247,19 +282,8 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                       </p>
                     </div>
 
-                    {/* Confirmation Email Badge */}
-                    <div className="bg-cyan-50/80 border border-cyan-200/90 rounded-xl p-4 max-w-md text-left text-xs text-slate-700 flex items-start gap-3 my-1 shadow-2xs">
-                      <Mail className="w-4 h-4 text-cyan-600 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-slate-900">Confirmation Notification Dispatched</p>
-                        <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                          A confirmation email notification has been dispatched to <strong className="text-slate-900 font-semibold">hello@growwithetdigital.com</strong> with the subject: <span className="text-cyan-800 font-semibold italic">"Thank you for The Digital Growth Playbook!"</span>.
-                        </p>
-                      </div>
-                    </div>
-
                     {/* Action buttons */}
-                    <div className="flex flex-wrap items-center justify-center gap-3 mt-3 w-full max-w-md">
+                    <div className="flex flex-wrap items-center justify-center gap-3 mt-2 w-full max-w-md">
                       <button
                         onClick={handleReDownload}
                         className="flex-1 inline-flex items-center justify-center gap-2 bg-slate-950 hover:bg-slate-900 text-white font-display text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
