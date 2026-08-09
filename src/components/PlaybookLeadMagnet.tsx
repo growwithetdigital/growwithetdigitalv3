@@ -36,22 +36,21 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
       setPdfBlobUrl(url);
       setPdfDoc(doc);
 
-      // 2. Trigger browser download
+      // 2. Trigger browser download immediately
       const safeFilename = `ET_Digital_Growth_Playbook_${formData.name.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
       doc.save(safeFilename);
 
-      // 3. Save Lead to Firestore
-      try {
-        await submitPlaybookLeadToFirestore({
-          name: formData.name,
-          email: formData.email,
-          company: formData.company
-        });
-      } catch (fErr) {
-        console.warn('Firestore Lead logging note:', fErr);
-      }
+      // 3. Immediately switch UI to Confirmation and Thank You state (prevents button sticking on "Preparing Playbook...")
+      setIsSubmitted(true);
+      setIsLoading(false);
 
-      // 4. Send Confirmation Notification Email to hello@growwithetdigital.com
+      // 4. Save Lead & Send Notification Email in background
+      submitPlaybookLeadToFirestore({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company
+      }).catch((fErr) => console.warn('Firestore Lead logging note:', fErr));
+
       const notificationEmail = 'hello@growwithetdigital.com';
       const notificationSubject = 'Thank you for The Digital Growth Playbook!';
       const emailBody = `
@@ -86,16 +85,11 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
         </div>
       `;
 
-      try {
-        await sendGmailMessage(notificationEmail, notificationSubject, emailBody);
-      } catch (gErr) {
+      sendGmailMessage(notificationEmail, notificationSubject, emailBody).catch((gErr) => {
         console.info('Gmail Workspace auto-email notification dispatched to hello@growwithetdigital.com:', gErr);
-      }
-
-      setIsSubmitted(true);
+      });
     } catch (err) {
       console.error('Failed to generate Playbook PDF:', err);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -235,26 +229,26 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                   key="playbook-success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-slate-50 border border-slate-200/80 p-8 rounded-2xl shadow-sm w-full text-center"
+                  className="bg-slate-50 border border-slate-200/80 p-8 sm:p-10 rounded-2xl shadow-sm w-full text-center"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center text-cyan-600 shadow-sm">
-                      <CheckCircle2 className="w-8 h-8" />
+                    <div className="w-16 h-16 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center text-cyan-600 shadow-md">
+                      <CheckCircle2 className="w-9 h-9" />
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] font-black uppercase tracking-widest text-brand-cyan bg-cyan-50 px-3 py-1 rounded-full border border-cyan-100">
-                        13-Page PDF Playbook Generated
+                      <span className="font-mono text-[10px] font-black uppercase tracking-widest text-brand-cyan bg-cyan-50 px-3.5 py-1 rounded-full border border-cyan-100/80">
+                        Thank You from ET Digital
                       </span>
-                      <h4 className="font-display text-xl sm:text-2xl font-black text-slate-950 tracking-tight mt-3 mb-2">
-                        Your Playbook Has Downloaded, {formData.name}!
+                      <h4 className="font-display text-2xl sm:text-3xl font-black text-slate-950 tracking-tight mt-3 mb-2">
+                        Thank You, {formData.name}!
                       </h4>
                       <p className="font-sans text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
-                        Your copy of <strong className="text-slate-900">The Digital Growth Playbook</strong> has been generated and downloaded for <span className="text-slate-900 font-semibold">{formData.email}</span>.
+                        Your copy of <strong className="text-slate-900">The Digital Growth Playbook</strong> has been successfully generated and saved to your device for <span className="text-slate-900 font-semibold">{formData.email}</span> {formData.company ? `(${formData.company})` : ''}.
                       </p>
                     </div>
 
                     {/* Confirmation Email Badge */}
-                    <div className="bg-cyan-50/80 border border-cyan-200/90 rounded-xl p-3.5 max-w-md text-left text-xs text-slate-700 flex items-start gap-3 my-1 shadow-2xs">
+                    <div className="bg-cyan-50/80 border border-cyan-200/90 rounded-xl p-4 max-w-md text-left text-xs text-slate-700 flex items-start gap-3 my-1 shadow-2xs">
                       <Mail className="w-4 h-4 text-cyan-600 shrink-0 mt-0.5" />
                       <div>
                         <p className="font-bold text-slate-900">Confirmation Notification Dispatched</p>
@@ -285,16 +279,16 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
 
                     <div className="pt-4 border-t border-slate-200/80 w-full max-w-md mt-3 flex flex-col items-center gap-2.5">
                       <p className="font-sans text-xs font-medium text-slate-600">
-                        Want help implementing these 10 strategies for <strong className="text-slate-900 font-semibold">{formData.company || 'your business'}</strong>?
+                        Ready to implement these 10 strategies for <strong className="text-slate-900 font-semibold">{formData.company || 'your business'}</strong>?
                       </p>
                       <a
-                        href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=ET+Digital+Free+AI+Growth+Audit&details=1-on-1+Executive+AI+Growth+Audit+with+ET+Digital+Agency.+Analyze+your+local+AI+search+discoverability,+conversion+funnel,+and+growth+roadmap.&location=Google+Meet"
+                        href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=ET+Digital+Free+AI+Growth+Audit&details=1-on-1+Executive+AI+Growth+Audit+with+ET+Digital.+Analyze+your+local+AI+search+discoverability,+conversion+funnel,+and+growth+roadmap.&location=Google+Meet"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-700 text-white font-display text-xs sm:text-sm font-bold uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer text-center"
                       >
                         <Calendar className="w-4 h-4 text-white shrink-0" />
-                        <span>Book Free Audit on Google Calendar →</span>
+                        <span>Work With Us on Google Calendar →</span>
                       </a>
                     </div>
                   </div>

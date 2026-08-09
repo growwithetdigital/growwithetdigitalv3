@@ -711,7 +711,7 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
   });
 
   // Call to action button box with generous width so NO text gets cut off
-  const ctaBtnWidth = 150;
+  const ctaBtnWidth = 110;
   const ctaBtnHeight = 11;
   const ctaBtnX = margin + (contentWidth - ctaBtnWidth) / 2;
   const ctaBtnY = page13Y + 75;
@@ -720,9 +720,9 @@ export async function generatePlaybookPDF(userData: UserFormData): Promise<any> 
   doc.roundedRect(ctaBtnX, ctaBtnY, ctaBtnWidth, ctaBtnHeight, 2.5, 2.5, 'F');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
-  doc.text('BOOK YOUR FREE AUDIT ON GOOGLE CALENDAR →', ctaBtnX + 13, ctaBtnY + 7.5);
+  doc.text('WORK WITH US →', ctaBtnX + 22, ctaBtnY + 7.5);
 
   // Hyperlink directly to Google Calendar Appointment Schedule
   doc.link(ctaBtnX, ctaBtnY, ctaBtnWidth, ctaBtnHeight, { url: GOOGLE_CALENDAR_AUDIT_URL });
