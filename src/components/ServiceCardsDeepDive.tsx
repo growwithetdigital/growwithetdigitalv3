@@ -107,14 +107,16 @@ export default function ServiceCardsDeepDive({ onOpenBooking }: { onOpenBooking:
                 </div>
 
                 {/* Micro-focused call to action */}
-                <button
-                  onClick={onOpenBooking}
+                <a
+                  href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-mono text-[10px] font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
                   id="service-booking-btn"
                 >
                   Work with Us
                   <ArrowUpRight className="w-3.5 h-3.5 text-slate-950" />
-                </button>
+                </a>
               </motion.div>
             );
           })}

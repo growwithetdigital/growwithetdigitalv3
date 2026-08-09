@@ -153,15 +153,15 @@ export default function App() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setToast(null);
-                  handleOpenBooking();
-                }}
-                className="bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-[9px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+              <a
+                href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setToast(null)}
+                className="bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-[9px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1"
               >
                 Work with Us
-              </button>
+              </a>
               <button
                 onClick={() => setToast(null)}
                 className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-display text-[9px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer"

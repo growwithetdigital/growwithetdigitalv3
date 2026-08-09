@@ -134,8 +134,10 @@ export default function Footer({
               </h2>
             </div>
 
-            <button
-              onClick={onOpenBooking}
+            <a
+              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
               id="footer-booking-btn"
             >
@@ -143,7 +145,7 @@ export default function Footer({
                 Work with Us
                 <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </span>
-            </button>
+            </a>
           </div>
 
           {/* Multi-Column Grid */}

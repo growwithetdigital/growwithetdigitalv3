@@ -240,9 +240,9 @@ ${formData.notes || 'No extra notes provided.'}
                 </div>
                 <div>
                   <h3 className="font-display text-lg font-black text-white uppercase tracking-wider">
-                    Work with Us
+                    Let's Connect
                   </h3>
-                  <p className="text-[10px] font-mono text-slate-400">ET DIGITAL BRANDED INTAKE</p>
+                  <p className="text-[10px] font-mono text-slate-400">CONTACT ET DIGITAL DIRECTLY</p>
                 </div>
               </div>
               <button 
@@ -261,10 +261,10 @@ ${formData.notes || 'No extra notes provided.'}
                   <Check className="w-8 h-8" />
                 </div>
                 <h4 className="font-display text-xl font-bold text-white mb-2">
-                  Inquiry Initiated!
+                  Message Sent!
                 </h4>
                 <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto">
-                  Thank you, {formData.name}. Your strategy profile has been registered successfully. We are reviewing your footprint.
+                  Thank you, {formData.name}. Your inquiry has been sent to hello@growwithetdigital.com. Our team will review and follow up with you shortly.
                 </p>
 
                 {/* Real-time synchronization pipeline trace */}
@@ -436,11 +436,11 @@ ${formData.notes || 'No extra notes provided.'}
                   {status.submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                      Deploying Growth Strategy Pipeline...
+                      Sending Message...
                     </>
                   ) : (
                     <>
-                      Confirm & Connect
+                      Send Email to hello@growwithetdigital.com
                     </>
                   )}
                 </button>

@@ -224,15 +224,15 @@ export default function InstagramFeedGrid({ onOpenBooking }: InstagramFeedGridPr
               <ArrowUpRight className="w-3.5 h-3.5 ml-2 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
 
-            {onOpenBooking && (
-              <button
-                onClick={onOpenBooking}
-                className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-slate-200 border border-slate-800 font-display text-xs font-bold uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer"
-              >
-                <Calendar className="w-4 h-4 mr-2 text-brand-cyan" />
-                <span>Book Free Consultation</span>
-              </button>
-            )}
+            <a
+              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-slate-200 border border-slate-800 font-display text-xs font-bold uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer"
+            >
+              <Calendar className="w-4 h-4 mr-2 text-brand-cyan" />
+              <span>Book Free Consultation</span>
+            </a>
           </div>
         </div>
 
@@ -378,17 +378,15 @@ export default function InstagramFeedGrid({ onOpenBooking }: InstagramFeedGridPr
                       <ArrowUpRight className="w-4 h-4 ml-1.5" />
                     </button>
 
-                    {onOpenBooking && (
-                      <button
-                        onClick={() => {
-                          setActiveModalCard(null);
-                          onOpenBooking();
-                        }}
-                        className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-display text-xs font-bold uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer"
-                      >
-                        <span>Book Free Consultation</span>
-                      </button>
-                    )}
+                    <a
+                      href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setActiveModalCard(null)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-display text-xs font-bold uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      <span>Book Free Consultation</span>
+                    </a>
                   </div>
                 </div>
 
