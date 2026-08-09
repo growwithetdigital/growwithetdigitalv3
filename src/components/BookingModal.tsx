@@ -1,15 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  X, Check, Sparkles, Database, FileSpreadsheet, FileText, Mail, Loader2 
-} from 'lucide-react';
-import { 
-  submitBookingToFirestore, 
-  appendRowToGoogleSheet, 
-  uploadBriefToGoogleDrive, 
-  sendGmailMessage, 
-  getAccessToken 
-} from '../lib/firebase';
+import { X, Sparkles, Send } from 'lucide-react';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -17,207 +8,17 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    objective: 'SEO & Search Authority',
-    notes: ''
-  });
-
-  const [status, setStatus] = useState({
-    submitting: false,
-    firestore: 'idle', // 'idle' | 'running' | 'success' | 'error'
-    sheets: 'idle',
-    drive: 'idle',
-    gmail: 'idle',
-    complete: false,
-    error: null as string | null
-  });
-
-  const objectivesList = [
-    'SEO & Search Authority',
-    'Content Marketing Authority',
-    'High-Conversion Web Experience',
-    'Custom Growth Operating System',
-    'AI & Automation Strategy'
-  ];
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.company || !formData.objective) {
-      setStatus(prev => ({ ...prev, error: 'Please fill in all required fields.' }));
-      return;
-    }
-
-    setStatus({
-      submitting: true,
-      firestore: 'running',
-      sheets: 'idle',
-      drive: 'idle',
-      gmail: 'idle',
-      complete: false,
-      error: null
-    });
-
-    try {
-      // 1. Write lead to Firestore (Required Firebase Task)
-      const bookingId = await submitBookingToFirestore({
-        name: formData.name,
-        email: formData.email,
-        company: formData.company,
-        objective: formData.objective,
-        notes: formData.notes,
-      });
-
-      setStatus(prev => ({ ...prev, firestore: 'success' }));
-
-      // 2. Check if Google OAuth credentials exist on client to sync Workspace APIs in real-time
-      const token = await getAccessToken();
-      if (token) {
-        // (a) Sync Google Sheets
-        setStatus(prev => ({ ...prev, sheets: 'running' }));
-        try {
-          const storedSpreadsheetId = localStorage.getItem('et_digital_sheet_id');
-          if (storedSpreadsheetId) {
-            await appendRowToGoogleSheet(storedSpreadsheetId, 'Sheet1', [
-              [
-                new Date().toLocaleString(),
-                formData.name,
-                formData.email,
-                formData.company,
-                formData.objective,
-                formData.notes || 'N/A',
-                bookingId
-              ]
-            ]);
-            setStatus(prev => ({ ...prev, sheets: 'success' }));
-          } else {
-            setStatus(prev => ({ ...prev, sheets: 'idle' })); // No sheet bound
-          }
-        } catch (err) {
-          console.error('Sheets Sync Error:', err);
-          setStatus(prev => ({ ...prev, sheets: 'error' }));
-        }
-
-        // (b) Sync Google Drive
-        setStatus(prev => ({ ...prev, drive: 'running' }));
-        try {
-          const briefContent = `
-ET Digital Growth Strategy Brief
-==================================
-Submitted At: ${new Date().toLocaleString()}
-Booking ID: ${bookingId}
-
-Prospect Information:
----------------------
-Name: ${formData.name}
-Email: ${formData.email}
-Company: ${formData.company}
-
-Growth Profile:
----------------
-Primary Objective: ${formData.objective}
-
-Client Strategy Notes:
-----------------------
-${formData.notes || 'No extra notes provided.'}
-          `.trim();
-          
-          await uploadBriefToGoogleDrive(
-            `Prospect_Brief_${formData.name.replace(/\s+/g, '_')}.txt`,
-            briefContent
-          );
-          setStatus(prev => ({ ...prev, drive: 'success' }));
-        } catch (err) {
-          console.error('Drive Sync Error:', err);
-          setStatus(prev => ({ ...prev, drive: 'error' }));
-        }
-
-        // (c) Sync Gmail
-        setStatus(prev => ({ ...prev, gmail: 'running' }));
-        try {
-          const emailBody = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-              <h2 style="color: #06b6d4; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; font-weight: 800;">ET DIGITAL GROWTH STRATEGY</h2>
-              <p style="font-size: 16px; color: #1e293b;">Hello <strong>${formData.name}</strong>,</p>
-              <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-                Thank you for initiating your inquiry with ET Digital. We have received your submission and initialized your custom profile.
-              </p>
-              <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #0f172a; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Your Profile:</h3>
-                <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
-                  <li style="margin-bottom: 8px;"><strong>Company:</strong> ${formData.company}</li>
-                  <li style="margin-bottom: 8px;"><strong>Primary Growth Track:</strong> ${formData.objective}</li>
-                </ul>
-              </div>
-              <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-                Our team will analyze your digital footprint and reach out to schedule our live execution deep dive.
-              </p>
-              <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;" />
-              <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-                ET Digital Inc. &bull; Los Angeles, CA &bull; hello@growwithetdigital.com
-              </p>
-            </div>
-          `.trim();
-          
-          // Send confirmation to client
-          await sendGmailMessage(
-            formData.email,
-            'Your ET Digital Growth Inquiry is Initiated',
-            emailBody
-          );
-
-          // Send lead alert notification to internal inbox
-          const adminNotificationBody = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #06b6d4; border-radius: 12px; background-color: #0f172a; color: #ffffff;">
-              <h2 style="color: #06b6d4; border-bottom: 2px solid #334155; padding-bottom: 10px; font-weight: 800; margin-top: 0;">NEW LEAD SUBMISSION</h2>
-              <p style="font-size: 15px; color: #e2e8f0;">A new strategy consultation inquiry was submitted via the website form.</p>
-              <div style="background-color: #1e293b; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #334155;">
-                <p style="margin: 6px 0;"><strong>Name:</strong> ${formData.name}</p>
-                <p style="margin: 6px 0;"><strong>Email:</strong> <a href="mailto:${formData.email}" style="color: #38bdf8;">${formData.email}</a></p>
-                <p style="margin: 6px 0;"><strong>Company:</strong> ${formData.company}</p>
-                <p style="margin: 6px 0;"><strong>Objective:</strong> ${formData.objective}</p>
-                <p style="margin: 6px 0;"><strong>Notes:</strong> ${formData.notes || 'None provided.'}</p>
-              </div>
-            </div>
-          `.trim();
-
-          await sendGmailMessage(
-            'hello@growwithetdigital.com',
-            `New Strategy Lead: ${formData.name} (${formData.company})`,
-            adminNotificationBody
-          );
-
-          setStatus(prev => ({ ...prev, gmail: 'success' }));
-        } catch (err) {
-          console.error('Gmail Sync Error:', err);
-          setStatus(prev => ({ ...prev, gmail: 'error' }));
-        }
-      }
-
-      setStatus(prev => ({ ...prev, complete: true, submitting: false }));
-    } catch (err: any) {
-      console.error('Booking submission failed:', err);
-      setStatus(prev => ({ 
-        ...prev, 
-        submitting: false, 
-        error: err.message || 'An error occurred while submitting your strategy booking.' 
-      }));
-    }
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
           {/* Overlay background */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-950/85 backdrop-blur-md"
             id="modal-overlay"
           />
 
@@ -226,174 +27,66 @@ ${formData.notes || 'No extra notes provided.'}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl text-left overflow-hidden z-10"
+            className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl text-left overflow-hidden z-10 my-auto flex flex-col max-h-[92vh]"
             id="booking-form-modal"
           >
             {/* Background cyan glow */}
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-cyan/10 rounded-full blur-2xl pointer-events-none" />
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-6 relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-cyan-950 border border-brand-cyan/20">
-                  <Sparkles className="w-5 h-5 text-brand-cyan animate-pulse" />
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 shrink-0 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-cyan-950/80 border border-brand-cyan/30 text-brand-cyan shadow-sm">
+                  <Sparkles className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-black text-white uppercase tracking-wider">
+                  <h3 className="font-display text-lg sm:text-xl font-black text-white uppercase tracking-wider">
                     Let's Connect
                   </h3>
-                  <p className="text-[10px] font-mono text-slate-400">CONTACT ET DIGITAL DIRECTLY</p>
+                  <p className="text-[10px] font-mono text-slate-400">OFFICIAL ET DIGITAL CONTACT FORM</p>
                 </div>
               </div>
               <button 
                 onClick={onClose}
-                className="p-1.5 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono"
                 id="close-booking-modal-btn"
+                title="Close Window"
               >
+                <span>Close</span>
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {status.complete ? (
-              /* Success View */
-              <div className="text-center py-6 relative z-10">
-                <div className="w-16 h-16 bg-cyan-950 border border-brand-cyan/30 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-cyan shadow-lg shadow-cyan-950/50">
-                  <Check className="w-8 h-8" />
-                </div>
-                <h4 className="font-display text-2xl font-black text-white mb-2">
-                  Connection Sent!
-                </h4>
-                <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto leading-relaxed">
-                  Thank you, <strong className="text-white">{formData.name}</strong>. Your connection request and message have been sent to <strong className="text-brand-cyan">hello@growwithetdigital.com</strong>. Our team will review your details and reach back out shortly.
-                </p>
+            {/* Form Iframe Body */}
+            <div className="flex-1 overflow-y-auto py-3 my-2 scrollbar-thin scrollbar-thumb-slate-800 rounded-xl bg-slate-950 border border-slate-800/80">
+              <iframe
+                src="https://docs.google.com/forms/d/e/1FAIpQLSfwtjXUwkk1oNy7P3HweXWfpylVhR8ZDpOOANUyJwZ-Z9dg5Q/viewform?embedded=true"
+                width="100%"
+                height="691"
+                frameBorder="0"
+                marginHeight={0}
+                marginWidth={0}
+                className="w-full rounded-xl min-h-[640px] border-0"
+                title="ET Digital Let's Connect Contact Form"
+              >
+                Loading form...
+              </iframe>
+            </div>
 
-                <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left font-sans text-xs text-slate-300 space-y-1.5 max-w-sm mx-auto mb-6">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                    <Check className="w-4 h-4 shrink-0" />
-                    <span>Inquiry Logged & Delivered</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 leading-normal pl-6">
-                    A confirmation notification has been dispatched to hello@growwithetdigital.com.
-                  </p>
-                </div>
-
-                <button 
-                  onClick={onClose}
-                  className="w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                  id="success-dismiss-btn"
-                >
-                  <X className="w-4 h-4 text-slate-950" />
-                  <span>Close Window</span>
-                </button>
+            {/* Footer with Close Button */}
+            <div className="pt-3 border-t border-slate-800/80 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+              <div className="flex items-center gap-2 text-slate-400 text-[11px] font-sans">
+                <Send className="w-3.5 h-3.5 text-brand-cyan shrink-0" />
+                <span>Form submits directly to ET Digital. Click close when complete.</span>
               </div>
-            ) : (
-              /* Input Form View */
-              <form onSubmit={handleSubmit} className="space-y-4 relative z-10" id="booking-form-element">
-                {status.error && (
-                  <div className="p-3 rounded-xl bg-red-950/50 border border-red-500/30 text-red-200 text-xs text-center">
-                    {status.error}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Your Full Name *
-                  </label>
-                  <input 
-                    type="text"
-                    required
-                    disabled={status.submitting}
-                    placeholder="Eric Thomas"
-                    value={formData.name}
-                    onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                    className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
-                    id="booking-input-name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Business Email *
-                  </label>
-                  <input 
-                    type="email"
-                    required
-                    disabled={status.submitting}
-                    placeholder="you@company.com"
-                    value={formData.email}
-                    onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
-                    className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
-                    id="booking-input-email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Company / Brand Name *
-                  </label>
-                  <input 
-                    type="text"
-                    required
-                    disabled={status.submitting}
-                    placeholder="ET Digital Agency"
-                    value={formData.company}
-                    onChange={e => setFormData(p => ({ ...p, company: e.target.value }))}
-                    className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
-                    id="booking-input-company"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Primary Growth Objective *
-                  </label>
-                  <select
-                    disabled={status.submitting}
-                    value={formData.objective}
-                    onChange={e => setFormData(p => ({ ...p, objective: e.target.value }))}
-                    className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-cyan/50 transition-colors cursor-pointer disabled:opacity-50"
-                    id="booking-select-objective"
-                  >
-                    {objectivesList.map((obj, idx) => (
-                      <option key={idx} value={obj} className="bg-slate-950">{obj}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Tell us about your current marketing setup (Optional)
-                  </label>
-                  <textarea 
-                    rows={3}
-                    disabled={status.submitting}
-                    placeholder="We currently struggle with organic SEO traffic and want to establish our brand as an authority on Google answers..."
-                    value={formData.notes}
-                    onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
-                    className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-cyan/50 transition-colors resize-none disabled:opacity-50"
-                    id="booking-textarea-notes"
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  disabled={status.submitting}
-                  className="w-full relative mt-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-                  id="booking-submit-btn"
-                >
-                  {status.submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                      Sending Connection...
-                    </>
-                  ) : (
-                    <>
-                      Confirm & Connect
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+              <button
+                onClick={onClose}
+                className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-display text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Close Window</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

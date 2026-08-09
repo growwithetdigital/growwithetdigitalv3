@@ -305,13 +305,14 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
                       <p className="font-sans text-xs font-medium text-slate-600">
                         Ready to implement these 10 strategies for <strong className="text-slate-900 font-semibold">{formData.company || 'your business'}</strong>?
                       </p>
-                      <a
-                        href="mailto:hello@growwithetdigital.com"
+                      <button
+                        type="button"
+                        onClick={onOpenBooking}
                         className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-700 text-white font-display text-xs sm:text-sm font-bold uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer text-center"
                       >
                         <Mail className="w-4 h-4 text-white shrink-0" />
                         <span>Lets Connect</span>
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </motion.div>

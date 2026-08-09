@@ -248,12 +248,12 @@ export default function SocialLinktreeModal({
           {/* Scrollable Links List */}
           <div className="p-5 overflow-y-auto space-y-3.5 scrollbar-thin scrollbar-thumb-slate-800">
             
-            {/* Primary Booking Highlight Link */}
-            <button
-              onClick={() => {
-                onClose();
-                onOpenBooking();
-              }}
+            {/* Primary Calendar Booking Link */}
+            <a
+              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
               className="w-full p-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-cyan-400 to-brand-cyan text-slate-950 font-display font-black text-xs uppercase tracking-wider flex items-center justify-between shadow-xl shadow-cyan-950/50 hover:scale-[1.02] transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-3">
@@ -261,11 +261,31 @@ export default function SocialLinktreeModal({
                   <Calendar className="w-4.5 h-4.5" />
                 </div>
                 <div className="text-left">
-                  <span className="block font-extrabold text-slate-950 text-xs">Book Strategy Session</span>
+                  <span className="block font-extrabold text-slate-950 text-xs">Work with Us (Book Audit)</span>
                   <span className="block font-mono text-[9px] text-slate-900 font-bold">Direct Calendar Access</span>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+
+            {/* Let's Connect Contact Form Button */}
+            <button
+              onClick={() => {
+                onClose();
+                onOpenBooking();
+              }}
+              className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-700/80 text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-between shadow-md hover:bg-slate-800 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-cyan-950 text-brand-cyan flex items-center justify-center shadow-md border border-brand-cyan/20">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <span className="block font-bold text-white text-xs">Let's Connect</span>
+                  <span className="block font-mono text-[9px] text-slate-400">Direct Contact Form</span>
+                </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
             </button>
 
             {/* Social Channels List */}
