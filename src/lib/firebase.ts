@@ -174,6 +174,28 @@ export const submitBookingToFirestore = async (lead: BookingLead): Promise<strin
   }
 };
 
+export const submitPlaybookLeadToFirestore = async (lead: { name: string; email: string; company?: string }): Promise<string> => {
+  const collectionName = 'playbook_downloads';
+  const leadId = 'pb_' + Math.random().toString(36).substring(2, 15);
+  try {
+    const docRef = doc(db, collectionName, leadId);
+    const cleanPayload = {
+      name: lead.name,
+      email: lead.email,
+      company: lead.company || '',
+      resource: 'The Digital Growth Playbook',
+      notificationRecipient: 'hello@growwithetdigital.com',
+      notificationSubject: 'Thank you for The Digital Growth Playbook!',
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(docRef, cleanPayload);
+    return leadId;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `${collectionName}/${leadId}`);
+    throw error;
+  }
+};
+
 export const fetchBookingsFromFirestore = async (): Promise<BookingLead[]> => {
   const collectionName = 'bookings';
   try {

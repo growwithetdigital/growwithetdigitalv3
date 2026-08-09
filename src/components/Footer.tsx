@@ -199,7 +199,7 @@ export default function Footer({
                 onClick={() => handleScrollTo('instagram-feed')}
                 className="text-slate-400 hover:text-white transition-colors text-left cursor-pointer"
               >
-                Social Feed
+                Client Case Studies
               </button>
               <a 
                 href={beehiivUrl}

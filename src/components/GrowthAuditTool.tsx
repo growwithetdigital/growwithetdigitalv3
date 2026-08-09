@@ -217,10 +217,10 @@ export default function GrowthAuditTool({ onOpenBooking }: GrowthAuditToolProps)
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-12 sm:mb-16">
           <span className="font-mono text-[9px] font-extrabold uppercase tracking-[0.25em] text-brand-cyan bg-cyan-950/50 border border-brand-cyan/20 px-3.5 py-1.5 rounded-full inline-block mb-4 shadow-sm">
-            INSTANT ONLINE AUDIT & GRADER
+            INSTANT ONLINE WEBSITE AUDIT
           </span>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white mb-5 uppercase">
-            Free Online Growth <span className="text-brand-cyan">& AI Grader</span>
+            Free Online Growth <span className="text-brand-cyan">& AI Auditor</span>
           </h2>
           <p className="font-sans text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Select one of the 3 channels below to get an instant, confidential <strong className="text-white font-semibold">A - D Report Card</strong> on your business's online discoverability, AI presence, and customer intake strength.

@@ -1,658 +1,413 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Heart, MessageCircle, ArrowUpRight, Check, TrendingUp, BarChart3, 
-  Quote, Share2, Compass, Users, Target, Phone, Sparkles, 
-  AlertCircle, MessageSquare, ArrowUp, MousePointerClick, Calendar
+  ArrowUpRight, Check, Calendar,
+  Building2, ExternalLink,
+  X, Search, Share2, ShieldCheck, Zap, Lightbulb
 } from 'lucide-react';
 import SocialLinktreeModal from './SocialLinktreeModal';
 
-// Custom high-fidelity SVGs for social platforms
-const LinkedInIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-sky-400" xmlns="http://www.w3.org/2000/svg">
-    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-  </svg>
-);
-
-const InstagramIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 text-rose-400" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-  </svg>
-);
-
-const XIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current text-slate-200" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-  </svg>
-);
-
-const FacebookIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-blue-500" xmlns="http://www.w3.org/2000/svg">
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-  </svg>
-);
-
-const PinterestIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-red-500" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12.289 2C6.617 2 2 6.614 2 12.284c0 4.34 2.695 8.047 6.54 9.613-.092-.81-.174-2.056.036-2.942.19-.8 1.226-5.195 1.226-5.195s-.313-.626-.313-1.55c0-1.45.84-2.537 1.89-2.537.892 0 1.32.67 1.32 1.47 0 .897-.572 2.24-.866 3.485-.246 1.04.52 1.886 1.547 1.886 1.855 0 3.284-1.957 3.284-4.78 0-2.5-1.8-4.248-4.364-4.248-2.972 0-4.718 2.23-4.718 4.533 0 .898.347 1.86.778 2.38.085.103.097.194.072.3-.08.33-.256 1.04-.29 1.18-.046.19-.15.23-.347.14-1.294-.6-2.015-2.5-2.015-4.02 0-3.273 2.378-6.278 6.856-6.278 3.6 0 6.4 2.565 6.4 5.998 0 3.578-2.256 6.454-5.385 6.454-1.05 0-2.04-.546-2.38-1.186l-.646 2.457c-.233.897-.864 2.02-1.284 2.7l1.096.34C18.254 22.01 22 17.58 22 12.284 22 6.614 17.362 2 12.289 2z"/>
-  </svg>
-);
-
-interface SocialPost {
+export interface FeedCardItem {
   id: string;
-  platform: 'linkedin' | 'instagram' | 'x' | 'facebook' | 'pinterest' | 'omni';
-  platformUser: string;
-  category: string;
-  heading: string;
-  caption: string;
-  likes: string;
-  comments: string;
-  graphicTitle: string;
-  graphicSubtitle: string;
-  metricLabel: string;
-  metricValue: string;
+  title: string;
+  cardType: 'Case Study';
+  quarter: string; // e.g. "Q3 2026"
+  quarterTag: string; // e.g. "Q3 2026 • Private Practice & AI Search"
+  reputableSource: string; // e.g. "ET Digital Client Success Story"
+  sourceUrl?: string;
+  imageUrl: string;
+  metricBadge: { label: string; value: string };
+  category: string; // e.g. "LOCAL SEO & AI DISCOVERY", "PR & MEDIA STORYTELLING", "REPUTATION & LOCAL CRM"
+  coreProblem: string;
+  solutionTakeaways: string[];
+  freeAuditorTieIn: string;
+  ctaText: string;
 }
 
 interface InstagramFeedGridProps {
   onOpenBooking?: () => void;
 }
 
+const QUARTER_CARDS: FeedCardItem[] = [
+  {
+    id: 'q3-card-1',
+    title: 'Private Practice Growth: Scaling Patient Discovery & AI Search Presence',
+    cardType: 'Case Study',
+    quarter: 'Q3 2026',
+    quarterTag: 'Q3 2026 • Private Practice & AI Search',
+    reputableSource: 'ET Digital Client Success Story',
+    metricBadge: { label: 'Inquiry Growth', value: '+240%' },
+    category: 'LOCAL SEO & AI DISCOVERY',
+    imageUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=85',
+    coreProblem: 'A licensed mental health professional specializing in imposter syndrome and executive stress wanted to expand their private practice with high-intent private-pay clients, but relied solely on basic directory listings.',
+    solutionTakeaways: [
+      'Built empathy-focused specialty pages for Imposter Syndrome & Burnout, optimized with rich entity schema for AI engines (Perplexity, ChatGPT, Gemini).',
+      'Integrated a seamless, HIPAA-compliant 1-click consultation scheduler and streamlined client intake workflow.',
+      'Captured high-intent AI search demand, directly acquiring a new private-pay client who found the therapist via an AI search for "imposter syndrome specialist".'
+    ],
+    freeAuditorTieIn: 'Test your practice’s local search rank and AI search discoverability using our Free AI Website Auditor Tool.',
+    ctaText: 'Read Full Practice Case Study →'
+  },
+  {
+    id: 'q3-card-2',
+    title: 'Significant Real Estate: Historic Decker Canyon Cottage PR Feature Yields +500% Traffic',
+    cardType: 'Case Study',
+    quarter: 'Q3 2026',
+    quarterTag: 'Q3 2026 • Significant Real Estate PR',
+    reputableSource: 'ET Digital Client Success Story',
+    metricBadge: { label: 'Web Traffic Lift', value: '+500%' },
+    category: 'PR & MEDIA STORYTELLING',
+    imageUrl: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=85',
+    coreProblem: 'A real estate advisor secured a landmark listing in Decker Canyon — the historic rustic ranch cottage of "Malibu Millie" Decker, famous as the last of the Malibu hillbillies — but needed national editorial press reach beyond standard MLS distribution.',
+    solutionTakeaways: [
+      'Crafted a compelling architectural narrative celebrating the historic 1930s Decker Canyon ranch, its original knotty pine craftsmanship, redwood deck, and 7.8-acre mountain enclave.',
+      'Executed targeted editorial PR pitching that secured an exclusive feature story in The Hollywood Reporter highlighting the property’s rich Malibu heritage.',
+      'Captured viral national press traffic with an interactive virtual tour, driving massive inquiry volume and earning top-producing agent honors.'
+    ],
+    freeAuditorTieIn: 'Discover how effectively your high-ticket offerings capture and convert web traffic with our Free AI Website Auditor Tool.',
+    ctaText: 'Read Full PR & Listing Case Study →'
+  },
+  {
+    id: 'q3-card-3',
+    title: 'Furniture Showroom Growth: Review Automation Drives 50% YoY Revenue',
+    cardType: 'Case Study',
+    quarter: 'Q3 2026',
+    quarterTag: 'Q3 2026 • Furniture Gallery & Local CRM',
+    reputableSource: 'ET Digital Client Success Story',
+    metricBadge: { label: 'YoY Revenue Lift', value: '+50%' },
+    category: 'REPUTATION & LOCAL CRM',
+    imageUrl: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=85',
+    coreProblem: 'A manager at an Ethan Allen style high-end furniture gallery delivered top-tier white-glove customer service in-store but lacked an automated system to turn happy buyers into an active lead magnet.',
+    solutionTakeaways: [
+      'Designed an automated post-purchase SMS and email review collection loop triggering immediately after in-store design consultations.',
+      'Optimized Google Business Profile with rich keyword-driven reviews, making customer praise the #1 local lead magnet for new furniture gallery walk-ins.',
+      'Generated 50% year-over-year revenue growth and earned "Gallery of the Year" honors through local reputation dominance.'
+    ],
+    freeAuditorTieIn: 'Find out how your local business profile and review reputation rank against top competitors with our Free AI Website Auditor Tool.',
+    ctaText: 'Read Full Showroom Case Study →'
+  }
+];
+
 export default function InstagramFeedGrid({ onOpenBooking }: InstagramFeedGridProps) {
+  const [activeModalCard, setActiveModalCard] = useState<FeedCardItem | null>(null);
   const [isSocialHubOpen, setIsSocialHubOpen] = useState(false);
-  const instagramUrl = "https://www.instagram.com/growwithetdigital?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr";
 
-  const posts: SocialPost[] = [
-    {
-      id: 'post-1',
-      platform: 'linkedin',
-      platformUser: 'growwithetdigital',
-      category: 'CLIENT GENERATION',
-      heading: 'Stop pitching and start helping. Here is the exact template we use to turn followers into paying clients:',
-      graphicTitle: 'FOLLOWERS ➔ PAYING CLIENTS',
-      graphicSubtitle: 'A simple conversation playbook for business owners',
-      metricLabel: 'Booking Rate Increase',
-      metricValue: '+240%',
-      likes: '512',
-      comments: '42',
-      caption: 'When small business owners ask us how to generate leads, we tell them to stop blasting automated pitch messages. Instead, use social media to share real, helpful insights. Your prospects want a trusted partner, not a pushy salesperson.'
-    },
-    {
-      id: 'post-2',
-      platform: 'instagram',
-      platformUser: 'growwithetdigital',
-      category: 'STOP SCROLLING',
-      heading: 'How to make your social media posts stand out even in a crowded, noisy feed:',
-      graphicTitle: '3 SECRETS TO STOP THE SCROLL',
-      graphicSubtitle: 'Captivating your audience instantly',
-      metricLabel: 'Viewer Retention Time',
-      metricValue: '3X LONGER',
-      likes: '342',
-      comments: '31',
-      caption: 'You do not need a massive production budget to get noticed on social media. You need a compelling hook, a clear design contrast, and a message that answers exactly what your audience is struggling with right now.'
-    },
-    {
-      id: 'post-3',
-      platform: 'x',
-      platformUser: '@growwithetdigital',
-      category: 'LOCAL RESULTS',
-      heading: 'How one local business owner doubled their monthly client bookings in exactly 30 days:',
-      graphicTitle: 'DOUBLED CLIENTS IN 30 DAYS',
-      graphicSubtitle: 'Simple organic tactics that bring results',
-      metricLabel: 'Monthly Growth Curve',
-      metricValue: '2.0X MORE',
-      likes: '912',
-      comments: '84',
-      caption: 'No expensive software. No complicated ad setups. We cleaned up their profile, started answering direct client questions with short video answers, and added a direct calendar booking link. The result? Completely booked.'
-    },
-    {
-      id: 'post-4',
-      platform: 'facebook',
-      platformUser: 'growwithetdigital',
-      category: 'MARKETING MYTHS',
-      heading: 'Why posting on social media every single day is actually hurting your brand reach:',
-      graphicTitle: 'QUALITY OVER VOLUME',
-      graphicSubtitle: 'The strategic approach to posting content',
-      metricLabel: 'Engagement Per Post',
-      metricValue: '+185%',
-      likes: '286',
-      comments: '24',
-      caption: 'We see business owners burn out trying to publish content every single day. If your posts are rushed, algorithms will stop showing them. Focus on 2-3 high-value, highly practical posts a week. Your sanity—and your leads—will thank you.'
-    },
-    {
-      id: 'post-5',
-      platform: 'pinterest',
-      platformUser: 'growwithetdigital',
-      category: 'LEAD GENERATION',
-      heading: 'The 5 critical mistakes small business owners make on social media (and how to fix them):',
-      graphicTitle: '5 CRITICAL SOCIAL MISTAKES',
-      graphicSubtitle: 'Are you accidentally losing potential clients?',
-      metricLabel: 'Leads Recovered',
-      metricValue: '100% FIXED',
-      likes: '674',
-      comments: '51',
-      caption: 'Mistake #1: Not having a clear call to action. If you do not tell your readers exactly what step to take next, they will simply scroll past. We design every post with a single, clear, welcoming path to contact you.'
-    },
-    {
-      id: 'post-6',
-      platform: 'omni',
-      platformUser: 'growwithetdigital',
-      category: 'COPYWRITING TIPS',
-      heading: 'Write high-converting captions that naturally get people to ask for your link:',
-      graphicTitle: 'CAPTIONS THAT CONVERT',
-      graphicSubtitle: 'The friendly copywriting system',
-      metricLabel: 'Direct Message Inquiries',
-      metricValue: '+320%',
-      likes: '419',
-      comments: '37',
-      caption: 'Great social media copy is written exactly how you speak in real life. Drop the corporate jargon and write like you are sending a helpful text message to a business friend. Clear beats clever every single time.'
-    }
-  ];
-
-  const renderPlatformBadge = (platform: string) => {
-    switch (platform) {
-      case 'linkedin':
-        return (
-          <span className="flex items-center gap-1.5 bg-sky-950/50 border border-sky-850 text-sky-400 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <LinkedInIcon />
-            LinkedIn
-          </span>
-        );
-      case 'instagram':
-        return (
-          <span className="flex items-center gap-1.5 bg-rose-950/50 border border-rose-850 text-rose-400 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <InstagramIcon />
-            Instagram
-          </span>
-        );
-      case 'x':
-        return (
-          <span className="flex items-center gap-1.5 bg-slate-900 border border-slate-850 text-slate-200 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <XIcon />
-            X (Twitter)
-          </span>
-        );
-      case 'facebook':
-        return (
-          <span className="flex items-center gap-1.5 bg-blue-950/50 border border-blue-850 text-blue-400 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <FacebookIcon />
-            Facebook
-          </span>
-        );
-      case 'pinterest':
-        return (
-          <span className="flex items-center gap-1.5 bg-red-950/50 border border-red-850 text-red-400 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <PinterestIcon />
-            Pinterest
-          </span>
-        );
-      default:
-        return (
-          <span className="flex items-center gap-1.5 bg-cyan-950/50 border border-brand-cyan/20 text-brand-cyan px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-            <Compass className="w-3.5 h-3.5" />
-            Omni-Channel
-          </span>
-        );
-    }
-  };
-
-  const renderGraphicMedia = (post: SocialPost) => {
-    switch (post.id) {
-      case 'post-1': // Followers -> Paying Clients (Warm Indigo & Cyan Gradient)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col justify-between p-6 text-white text-left">
-            {/* Grid and neon background overlays */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-25 pointer-events-none" />
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-cyan/25 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-violet-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-cyan via-cyan-500 to-violet-500" />
-            
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-brand-cyan bg-cyan-950/90 border border-brand-cyan/40 px-2 py-0.5 rounded-full uppercase tracking-wider">TUTORIAL</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-violet-400 block uppercase font-bold">Conversion System</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  Followers <span className="text-brand-cyan">➔</span> <br />
-                  <span className="bg-gradient-to-r from-brand-cyan to-cyan-300 bg-clip-text text-transparent">Paying Clients</span>
-                </h3>
-              </div>
-
-              {/* Graphical representation of the pipeline with people/business nodes */}
-              <div className="relative space-y-2 bg-slate-900/80 backdrop-blur border border-slate-800/80 p-3.5 rounded-2xl shadow-xl">
-                <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-slate-800 via-brand-cyan/50 to-brand-cyan pointer-events-none" />
-                
-                <div className="flex items-center gap-3.5 pl-2 relative">
-                  <div className="w-4 h-4 rounded-full bg-slate-950 border border-slate-700 flex items-center justify-center text-[7px] font-mono text-slate-400 font-black relative z-10 shadow-md">1</div>
-                  <div>
-                    <span className="block text-[9px] font-bold text-white uppercase tracking-wide">Share Helpful Insights</span>
-                    <span className="block text-[7.5px] text-slate-400">Post high-value answers to client problems</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3.5 pl-2 relative">
-                  <div className="w-4 h-4 rounded-full bg-cyan-950 border border-brand-cyan/60 flex items-center justify-center text-[7px] font-mono text-brand-cyan font-black relative z-10 shadow-lg shadow-cyan-950/50">2</div>
-                  <div>
-                    <span className="block text-[9px] font-bold text-cyan-300 uppercase tracking-wide">Start Direct Chats</span>
-                    <span className="block text-[7.5px] text-cyan-100/70">Connect warmly with zero sales pressure</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3.5 pl-2 relative">
-                  <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-brand-cyan to-cyan-400 flex items-center justify-center text-[7px] font-mono text-slate-950 font-black relative z-10 shadow-lg shadow-cyan-500/30">3</div>
-                  <div>
-                    <span className="block text-[9px] font-bold text-white uppercase tracking-wide">Book Strategy Session</span>
-                    <span className="block text-[7.5px] text-slate-200">Close the deal naturally with an invitation</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Inbound Success Index</span>
-              <span className="font-display text-[10px] font-black text-brand-cyan bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-brand-cyan/30 shadow-lg shadow-cyan-950/40">+240%</span>
-            </div>
-          </div>
-        );
-
-      case 'post-2': // 3 Secrets to Stop the Scroll (Vibrant Sunset Amber-Orange)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 flex flex-col justify-between p-6 text-white text-left">
-            {/* Cybernetic sunset grids */}
-            <div className="absolute inset-0 bg-[radial-gradient(#f43f5e_1px,transparent_1px)] [background-size:1rem_1rem] opacity-15 pointer-events-none" />
-            <div className="absolute -top-10 -left-10 w-32 h-32 bg-rose-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500" />
-
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-rose-400 bg-rose-950/90 border border-rose-800/40 px-2 py-0.5 rounded-full uppercase tracking-wider">MARKETING PILL</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-pink-400 block uppercase font-bold">Stop the Scroll</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  3 Secrets <br />
-                  <span className="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">To Stand Out</span>
-                </h3>
-              </div>
-
-              {/* Graphical representation of standing out */}
-              <div className="space-y-2 text-[9px] font-sans">
-                <div className="flex items-center gap-2.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/50 shadow-md">
-                  <span className="w-5 h-5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center font-mono font-bold text-slate-500 shrink-0">01</span>
-                  <div>
-                    <span className="block font-bold text-white">Visual Contrast Block</span>
-                    <span className="block text-slate-400 text-[8px]">Never use default plain colors</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5 bg-rose-950/40 p-2.5 rounded-xl border border-rose-900/30 shadow-md">
-                  <span className="w-5 h-5 rounded-lg bg-rose-900/60 border border-rose-700/50 flex items-center justify-center font-mono font-bold text-rose-400 shrink-0">02</span>
-                  <div>
-                    <span className="block font-bold text-white">Identify One Core Problem</span>
-                    <span className="block text-rose-200/80 text-[8px]">Address the viewer's exact pain point</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/50 shadow-md">
-                  <span className="w-5 h-5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center font-mono font-bold text-slate-500 shrink-0">03</span>
-                  <div>
-                    <span className="block font-bold text-white">Zero Gatekeeping Value</span>
-                    <span className="block text-slate-400 text-[8px]">Give away the playbook to build deep trust</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Retention Catalyst</span>
-              <span className="font-display text-[10px] font-black text-rose-400 bg-rose-950/80 px-2.5 py-0.5 rounded-full border border-rose-800/50 shadow-lg shadow-rose-950/40">3X LONGER</span>
-            </div>
-          </div>
-        );
-
-      case 'post-3': // Doubled Bookings in 30 days (Teal Growth Curve)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 flex flex-col justify-between p-6 text-white text-left">
-            {/* Glowing lines and overlays */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-35 pointer-events-none" />
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-emerald-400" />
-
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-teal-400 bg-teal-950/90 border border-teal-800/40 px-2 py-0.5 rounded-full uppercase tracking-wider">CASE STUDY</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-teal-400 block uppercase font-bold">Client Booking Breakthrough</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  Doubled Bookings <br />
-                  <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">In 30 Days</span>
-                </h3>
-              </div>
-
-              {/* Graphic comparing before and after */}
-              <div className="flex items-end justify-center gap-8 h-20 pt-4 bg-slate-900/60 backdrop-blur border border-slate-800/50 rounded-2xl p-3 shadow-xl relative overflow-hidden">
-                <div className="absolute top-2 right-2 text-[6.5px] font-mono text-slate-500 font-bold uppercase">Metric Audit</div>
-                
-                <div className="flex flex-col items-center relative z-10">
-                  <div className="w-12 h-6 bg-slate-950 rounded-t-lg border border-slate-800 flex items-center justify-center">
-                    <span className="text-[8px] font-black text-slate-400">10 calls</span>
-                  </div>
-                  <span className="text-[7px] font-mono text-slate-500 uppercase mt-1.5 font-bold">Before OS</span>
-                </div>
-                
-                <div className="flex flex-col items-center relative z-10">
-                  <div className="w-12 h-14 bg-gradient-to-t from-teal-600 via-teal-500 to-emerald-400 rounded-t-lg border border-teal-400/50 flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.3)] animate-pulse">
-                    <span className="text-[8px] font-black text-slate-950">20 calls</span>
-                  </div>
-                  <span className="text-[7px] font-mono text-teal-400 font-extrabold uppercase mt-1.5">After OS</span>
-                </div>
-
-                {/* Cyber metrics on the side */}
-                <div className="flex flex-col gap-1 justify-center h-full text-[7.5px] font-mono text-slate-400 border-l border-slate-800/60 pl-4">
-                  <div className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-emerald-400" />ROI: +312%</div>
-                  <div className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-emerald-400" />Cost: -42%</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Monthly Inbound Growth</span>
-              <span className="font-display text-[10px] font-black text-teal-400 bg-teal-950/80 px-2.5 py-0.5 rounded-full border border-teal-900 shadow-lg">2.0X MORE</span>
-            </div>
-          </div>
-        );
-
-      case 'post-4': // Quality Over Volume (Sleek Contrast)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 flex flex-col justify-between p-6 text-white text-left">
-            <div className="absolute inset-0 bg-[radial-gradient(rgba(244,63,94,0.12)_1px,transparent_1px)] [background-size:1.25rem_1.25rem] opacity-25 pointer-events-none" />
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-rose-500/25 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-400" />
-
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-rose-400 bg-rose-950/90 border border-rose-800/40 px-2 py-0.5 rounded-full uppercase tracking-wider">STRATEGY MYTH</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-slate-400 block uppercase font-bold">The Posting Trap</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  Quality <br />
-                  <span className="bg-gradient-to-r from-red-400 to-rose-400 bg-clip-text text-transparent underline decoration-rose-500/40 underline-offset-4">Over Daily Volume</span>
-                </h3>
-              </div>
-
-              {/* Representation of the comparison */}
-              <div className="grid grid-cols-2 gap-3 text-[8.5px] font-sans">
-                <div className="p-3 bg-slate-950/70 rounded-xl border border-slate-850 shadow-md">
-                  <div className="flex items-center gap-1.5 font-bold text-red-500 uppercase mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    Daily Spam
-                  </div>
-                  <p className="text-slate-400 leading-relaxed">Rushed, average posts that the algorithm hides from followers.</p>
-                </div>
-                <div className="p-3 bg-rose-950/20 rounded-xl border border-rose-900/30 shadow-md">
-                  <div className="flex items-center gap-1.5 font-bold text-rose-400 uppercase mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-                    2x Weekly OS
-                  </div>
-                  <p className="text-rose-100/90 leading-relaxed">Deep, high-value insights people bookmark and save.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Average Engagement</span>
-              <span className="font-display text-[10px] font-black text-rose-400 bg-rose-950/80 px-2.5 py-0.5 rounded-full border border-rose-900 shadow-lg shadow-rose-950/30">+185%</span>
-            </div>
-          </div>
-        );
-
-      case 'post-5': // 5 Critical Mistakes (Purple Slate Checklist)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 flex flex-col justify-between p-6 text-white text-left">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1b4b_1px,transparent_1px),linear-gradient(to_bottom,#1e1b4b_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-30 pointer-events-none" />
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-violet-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-indigo-500" />
-
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-violet-400 bg-violet-950/90 border border-violet-800/40 px-2 py-0.5 rounded-full uppercase tracking-wider">LEAD AUDIT</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-slate-400 block uppercase font-bold">Hot Lead Loss</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  5 Mistakes <br />
-                  <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">Leaking Leads</span>
-                </h3>
-              </div>
-
-              {/* Progress and status indicators */}
-              <div className="space-y-2 bg-slate-900/60 backdrop-blur border border-slate-800 p-3 rounded-2xl">
-                <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 font-bold">
-                  <span>AUDIT PROGRESS</span>
-                  <span className="text-violet-400 animate-pulse">FIXING STAGE</span>
-                </div>
-                
-                <div className="flex gap-1 h-3 items-center">
-                  <div className="flex-1 h-1.5 bg-violet-500 rounded-full shadow-[0_0_5px_rgba(139,92,246,0.5)]" />
-                  <div className="flex-1 h-1.5 bg-violet-600 rounded-full shadow-[0_0_5px_rgba(139,92,246,0.5)]" />
-                  <div className="flex-1 h-1.5 bg-violet-700 rounded-full" />
-                  <div className="flex-1 h-1.5 bg-indigo-800 rounded-full" />
-                  <div className="flex-1 h-1.5 bg-slate-800 rounded-full" />
-                </div>
-                
-                <p className="text-[9px] text-slate-300 font-sans leading-normal">
-                  <strong className="text-white">Mistake #1:</strong> Missing a direct, clear CTA. Don't assume readers know how to hire you!
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Leads Saved</span>
-              <span className="font-display text-[10px] font-black text-violet-400 bg-violet-950/80 px-2.5 py-0.5 rounded-full border border-violet-900 shadow-lg">100% FIXED</span>
-            </div>
-          </div>
-        );
-
-      default: // Captions That Convert (Direct quote/mock chat style)
-        return (
-          <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 flex flex-col justify-between p-6 text-white text-left">
-            <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:1rem_1rem] opacity-20 pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
-
-            <div className="flex justify-between items-start z-10">
-              <span className="text-[9px] font-mono font-extrabold text-emerald-400 bg-emerald-950/90 border border-emerald-800/40 px-2 py-0.5 rounded-full uppercase tracking-wider">COPY CLINIC</span>
-            </div>
-
-            <div className="my-auto space-y-4 z-10">
-              <div className="space-y-1">
-                <span className="font-mono text-[8px] tracking-[0.25em] text-emerald-400 block uppercase font-bold">Copywriting System</span>
-                <h3 className="font-display text-xl font-black text-white leading-tight tracking-tight uppercase">
-                  Captions <br />
-                  <span className="bg-gradient-to-r from-emerald-400 to-cyan-300 bg-clip-text text-transparent">That Convert</span>
-                </h3>
-              </div>
-
-              {/* Text message box simulation */}
-              <div className="bg-slate-900/85 border border-slate-800/80 rounded-2xl p-3 space-y-2 text-[9px] font-sans shadow-xl">
-                <div className="bg-slate-950 p-2.5 rounded-xl text-slate-200 border border-slate-800/50 leading-relaxed">
-                  "Struggling to find organic leads? Reply <span className="text-emerald-400 font-bold underline">'STRATEGY'</span> below and I'll send our direct roadmap."
-                </div>
-                <div className="text-[7.5px] font-mono text-emerald-400/80 text-right pr-1 flex items-center justify-end gap-1 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  ✓ Sent directly to DM
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-900 z-10">
-              <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest font-bold">Direct Message Growth</span>
-              <span className="font-display text-[10px] font-black text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-900 shadow-lg">+320%</span>
-            </div>
-          </div>
-        );
+  const handleLaunchAuditor = () => {
+    setActiveModalCard(null);
+    const element = document.getElementById('growth-grader');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   return (
-    <section id="instagram-feed" className="py-24 bg-slate-950 text-white relative overflow-hidden select-none border-b border-slate-950">
-      {/* Background cybernetics elements */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#111827_1px,transparent_1px),linear-gradient(to_bottom,#111827_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
+    <section id="instagram-feed" className="py-24 bg-slate-950 text-white relative overflow-hidden select-none border-b border-slate-900">
+      {/* Background Cybernetic Gradient Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-brand-cyan/5 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-25 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* Title Block */}
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <span className="font-mono text-[10px] font-extrabold uppercase tracking-[0.25em] text-brand-cyan bg-cyan-950/80 border border-brand-cyan/20 px-3.5 py-1.5 rounded-full inline-block mb-4">
-            Practical Marketing Insights
-          </span>
-          <h2 className="font-display text-4xl font-black tracking-tight leading-none mb-6">
-            Our Social Feed
+        {/* Top Header Block */}
+        <div className="max-w-3xl mx-auto text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 bg-cyan-950/80 border border-brand-cyan/30 px-4 py-1.5 rounded-full mb-4 shadow-lg shadow-cyan-950/50">
+            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
+            <span className="font-mono text-[11px] font-black uppercase tracking-widest text-brand-cyan">
+              REAL CLIENT STORIES • PROVEN CASE STUDIES
+            </span>
+          </div>
+
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">
+            Proven Client Case Studies
           </h2>
-          <p className="font-sans text-slate-300 leading-relaxed max-w-xl mx-auto text-sm sm:text-base">
-            We share straightforward, everyday marketing strategies to help small business owners stop the scroll and turn casual social media viewers into qualified leads.
+
+          <p className="font-sans text-slate-300 leading-relaxed text-sm sm:text-base max-w-2xl mx-auto">
+            In-depth case studies detailing how custom AI search optimization, strategic local PR, and review automation delivered measurable revenue and market authority for our clients.
           </p>
         </div>
 
-        {/* 3x2 Grid of Posts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          {posts.map((post, idx) => (
+        {/* 3 Grid Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          {QUARTER_CARDS.map((card, idx) => (
             <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 15 }}
+              key={card.id}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.08 }}
-              className="group bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl transition-all duration-300 hover:border-brand-cyan/40"
-              id={post.id}
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              onClick={() => setActiveModalCard(card)}
+              className="group bg-slate-900/90 border border-slate-800 hover:border-brand-cyan/60 rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-cyan-950/40 cursor-pointer select-none relative"
             >
-              {/* Post Header */}
-              <div className="p-4 border-b border-slate-900 flex items-center justify-between bg-slate-950">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-cyan to-cyan-500 p-0.5 shadow-md">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-1">
-                      <img
-                        src="https://res.cloudinary.com/dnpvgq7gt/image/upload/v1783013238/IMG_6170_pgtrij.png"
-                        alt="ET"
-                        className="w-full h-full object-contain"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
+              <div>
+                {/* Scroll-stopping High-Res Photo Header */}
+                <div className="relative h-56 w-full overflow-hidden">
+                  <img
+                    src={card.imageUrl}
+                    alt={card.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+
+                  {/* Top Badge Overlay */}
+                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2">
+                    <span className="font-mono text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md backdrop-blur-md border shadow-lg bg-cyan-950/90 text-brand-cyan border-brand-cyan/40">
+                      {card.cardType}
+                    </span>
+
+                    <span className="font-mono text-[9px] font-black text-white bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-2.5 py-1 rounded-md shadow-md">
+                      {card.metricBadge.value}
+                    </span>
                   </div>
-                  <div>
-                    <span className="font-sans text-[11px] font-bold tracking-tight text-white block leading-none">{post.platformUser}</span>
-                    <span className="font-mono text-[8px] text-brand-cyan font-bold uppercase tracking-wider block mt-1">{post.category}</span>
+
+                  {/* Category Tag on Photo */}
+                  <div className="absolute bottom-3 left-3.5 right-3.5">
+                    <span className="font-mono text-[8px] font-extrabold text-brand-cyan uppercase tracking-widest block mb-0.5">
+                      {card.quarterTag}
+                    </span>
+                    <p className="font-sans text-[11px] font-bold text-slate-300 truncate">
+                      {card.reputableSource}
+                    </p>
                   </div>
                 </div>
-                {renderPlatformBadge(post.platform)}
+
+                {/* Card Text Content */}
+                <div className="p-6 space-y-4">
+                  <h3 className="font-display text-lg font-black text-white tracking-tight leading-snug group-hover:text-brand-cyan transition-colors">
+                    {card.title}
+                  </h3>
+
+                  {/* Core Problem Teaser */}
+                  <div className="p-3.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl space-y-1">
+                    <span className="font-mono text-[9px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> The Challenge
+                    </span>
+                    <p className="font-sans text-xs text-slate-300 leading-relaxed line-clamp-3 font-normal">
+                      {card.coreProblem}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Rich Visual Custom Graphic Template */}
-              <div className="relative aspect-square w-full overflow-hidden border-b border-slate-900 bg-slate-950 select-none">
-                {renderGraphicMedia(post)}
-
-                {/* ET Digital Watermark Overlay on every graphic */}
-                <div className="absolute top-4 right-4 bg-slate-950/90 backdrop-blur-md border border-slate-800/80 px-2.5 py-1.5 rounded-full flex items-center gap-1.5 select-none shadow-lg">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center p-0.5 shrink-0 border border-brand-cyan/25">
-                    <img
-                      src="https://res.cloudinary.com/dnpvgq7gt/image/upload/v1783013238/IMG_6170_pgtrij.png"
-                      alt="Logo"
-                      className="w-full h-full object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <span className="font-mono text-[8px] font-bold text-white uppercase tracking-wider">ET Digital</span>
-                </div>
-              </div>
-
-              {/* Simulated UI Actions */}
-              <div className="p-4 bg-slate-950 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-slate-400">
-                    <button className="hover:text-rose-500 transition-colors cursor-pointer">
-                      <Heart className="w-4 h-4" />
-                    </button>
-                    <button className="hover:text-white transition-colors cursor-pointer">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-                    <button className="hover:text-brand-cyan transition-colors cursor-pointer">
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Strategic caption */}
-                <div className="space-y-1">
-                  <p className="font-sans text-xs text-slate-300 leading-relaxed">
-                    <span className="font-bold text-white mr-1.5">growwithetdigital</span>
-                    {post.caption}
-                  </p>
-                </div>
+              {/* Card Footer with CTA */}
+              <div className="p-6 pt-0 border-t border-slate-800/50 mt-2 flex items-center justify-between text-xs font-mono font-extrabold text-brand-cyan group-hover:translate-x-0.5 transition-transform">
+                <span>{card.ctaText}</span>
+                <ArrowUpRight className="w-4 h-4 text-brand-cyan" />
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Call to action encouraging people to follow us across channels */}
-        <div className="max-w-2xl mx-auto text-center space-y-4 pt-4">
-          <div className="p-8 sm:p-10 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-cyan via-cyan-400 to-brand-cyan" />
-            
-            <span className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-brand-cyan bg-cyan-950/80 border border-brand-cyan/30 px-3.5 py-1.5 rounded-full inline-block mb-3">
-              JOIN THE COMMUNITY @GROWWITHETDIGITAL
-            </span>
+        {/* Footer Banner linking to Social Hub & Strategy Call */}
+        <div className="max-w-3xl mx-auto text-center p-8 sm:p-10 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-cyan via-cyan-400 to-brand-cyan" />
+          
+          <span className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-brand-cyan bg-cyan-950/80 border border-brand-cyan/30 px-3.5 py-1.5 rounded-full inline-block mb-3">
+            EXPLORE OUR DIGITAL CHANNELS
+          </span>
 
-            <h3 className="font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-2">
-              Follow Us For Daily Growth Playbooks
-            </h3>
+          <h3 className="font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-2">
+            Stay Connected Across Channels
+          </h3>
 
-            <p className="font-sans text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-6 leading-relaxed font-normal">
-              Connect with us across all social media channels for actionable growth tactics, real-time strategy updates, and direct conversion playbooks.
-            </p>
+          <p className="font-sans text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+            Follow ET Digital across our official social profiles for marketing breakdowns, quick tips, and direct business growth insights.
+          </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => setIsSocialHubOpen(true)}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-8 py-4 rounded-xl transition-all shadow-xl active:scale-95 cursor-pointer"
+            >
+              <Share2 className="w-4 h-4 mr-2 text-slate-950" />
+              <span>Connect @growwithetdigital</span>
+              <ArrowUpRight className="w-3.5 h-3.5 ml-2 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+
+            {onOpenBooking && (
               <button
-                onClick={() => setIsSocialHubOpen(true)}
-                className="w-full sm:w-auto group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-8 py-4 rounded-xl transition-all shadow-xl shadow-cyan-950/50 active:scale-95 cursor-pointer"
+                onClick={onOpenBooking}
+                className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-slate-200 border border-slate-800 font-display text-xs font-bold uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer"
               >
-                <Share2 className="w-4 h-4 mr-2 text-slate-950" />
-                <span>Follow Us @growwithetdigital</span>
-                <ArrowUpRight className="w-3.5 h-3.5 ml-2 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <Calendar className="w-4 h-4 mr-2 text-brand-cyan" />
+                <span>Book Free Consultation</span>
               </button>
-
-              {onOpenBooking && (
-                <button
-                  onClick={onOpenBooking}
-                  className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-950 hover:bg-slate-900 text-slate-200 border border-slate-800 font-display text-xs font-bold uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer"
-                >
-                  <Calendar className="w-4 h-4 mr-2 text-brand-cyan" />
-                  <span>Book Strategy Call</span>
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Linktree Social Landing Page Modal */}
-        <SocialLinktreeModal 
-          isOpen={isSocialHubOpen} 
-          onClose={() => setIsSocialHubOpen(false)} 
-          onOpenBooking={() => {
-            setIsSocialHubOpen(false);
-            if (onOpenBooking) onOpenBooking();
-          }} 
-        />
-
       </div>
+
+      {/* IN-WEBSITE INTERACTIVE CARD DETAIL MODAL OVERLAY */}
+      <AnimatePresence>
+        {activeModalCard && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModalCard(null)}
+              className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl"
+            />
+
+            {/* Modal Dialog Window */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 my-8 text-white"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setActiveModalCard(null)}
+                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-950/80 border border-slate-700/80 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* High-Res Hero Image Banner */}
+              <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+                <img
+                  src={activeModalCard.imageUrl}
+                  alt={activeModalCard.title}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+
+                <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg backdrop-blur-md border shadow-md bg-cyan-950/90 text-brand-cyan border-brand-cyan/40">
+                    {activeModalCard.cardType}
+                  </span>
+
+                  <span className="font-mono text-[10px] font-black text-white bg-slate-950/80 backdrop-blur-md border border-slate-700 px-3 py-1 rounded-lg shadow-md">
+                    {activeModalCard.quarterTag}
+                  </span>
+                </div>
+
+                <div className="absolute bottom-4 left-6 right-6">
+                  <span className="font-mono text-[9px] font-bold text-brand-cyan uppercase tracking-widest block mb-1">
+                    {activeModalCard.category}
+                  </span>
+                  <h2 className="font-display text-xl sm:text-2xl font-black text-white leading-snug">
+                    {activeModalCard.title}
+                  </h2>
+                </div>
+              </div>
+
+              {/* Modal Body Content */}
+              <div className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                
+                {/* Source & Citation Banner */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-brand-cyan/30 flex items-center justify-center shrink-0 text-brand-cyan">
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Case Study Reference
+                      </span>
+                      <p className="font-sans text-xs sm:text-sm font-bold text-white">
+                        {activeModalCard.reputableSource}
+                      </p>
+                    </div>
+                  </div>
+
+                  {activeModalCard.sourceUrl && (
+                    <a
+                      href={activeModalCard.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[10px] text-slate-400 hover:text-brand-cyan flex items-center gap-1 transition-colors underline decoration-slate-700 underline-offset-4"
+                    >
+                      <span>View Full Reference</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Core Problem Section */}
+                <div className="p-5 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-black uppercase tracking-wider">
+                    <Zap className="w-4 h-4" />
+                    <span>The Challenge & Opportunity</span>
+                  </div>
+                  <p className="font-sans text-sm text-slate-200 leading-relaxed">
+                    {activeModalCard.coreProblem}
+                  </p>
+                </div>
+
+                {/* ET Digital Solution & Strategic Takeaways */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-2 text-brand-cyan font-mono text-xs font-black uppercase tracking-wider">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Practical Solutions & Action Steps</span>
+                  </div>
+
+                  <ul className="space-y-2.5">
+                    {activeModalCard.solutionTakeaways.map((bullet, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+                        <Check className="w-4 h-4 text-brand-cyan shrink-0 mt-0.5" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Free Website Auditor Tool Tie-In (Key Lead Magnet Callout) */}
+                <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-950/90 via-slate-950 to-cyan-950/90 border border-brand-cyan/40 space-y-4 shadow-xl">
+                  <div className="flex items-center gap-2 text-brand-cyan font-mono text-xs font-black uppercase tracking-widest">
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Test Your Own Website Instantly</span>
+                  </div>
+
+                  <p className="font-sans text-xs sm:text-sm text-slate-200 leading-relaxed">
+                    {activeModalCard.freeAuditorTieIn}
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                    <button
+                      onClick={handleLaunchAuditor}
+                      className="w-full sm:w-auto inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all shadow-lg active:scale-95 cursor-pointer"
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      <span>Run Free AI Website Audit</span>
+                      <ArrowUpRight className="w-4 h-4 ml-1.5" />
+                    </button>
+
+                    {onOpenBooking && (
+                      <button
+                        onClick={() => {
+                          setActiveModalCard(null);
+                          onOpenBooking();
+                        }}
+                        className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-display text-xs font-bold uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer"
+                      >
+                        <span>Book Free Consultation</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Social Linktree Modal */}
+      <SocialLinktreeModal 
+        isOpen={isSocialHubOpen} 
+        onClose={() => setIsSocialHubOpen(false)} 
+        onOpenBooking={() => {
+          setIsSocialHubOpen(false);
+          if (onOpenBooking) onOpenBooking();
+        }}
+      />
+
     </section>
   );
 }

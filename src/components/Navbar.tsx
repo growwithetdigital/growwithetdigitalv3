@@ -117,7 +117,7 @@ export default function Navbar({
               activeSection === 'instagram-feed' ? 'text-cyan-650 font-extrabold' : 'text-slate-500'
             }`}
           >
-            Social Feed
+            Case Studies
           </button>
           <button
             onClick={() => handleNavClick('faq')}
@@ -180,7 +180,7 @@ export default function Navbar({
             >
               <span>Free Auditor</span>
               <span className="font-mono text-[9px] font-extrabold uppercase bg-brand-cyan/20 text-cyan-700 px-2 py-0.5 rounded-md">
-                Free Grade
+                Free Audit
               </span>
             </button>
             <button
@@ -199,7 +199,7 @@ export default function Navbar({
               onClick={() => handleNavClick('instagram-feed')}
               className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-700 hover:text-cyan-600 cursor-pointer"
             >
-              Social Feed
+              Case Studies
             </button>
             <button
               onClick={() => handleNavClick('faq')}
