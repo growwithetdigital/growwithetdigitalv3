@@ -7,9 +7,10 @@ import { submitPlaybookLeadToFirestore, sendGmailMessage } from '../lib/firebase
 
 interface PlaybookLeadMagnetProps {
   onOpenBooking: () => void;
+  onOpenCalendar?: () => void;
 }
 
-export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnetProps) {
+export default function PlaybookLeadMagnet({ onOpenBooking, onOpenCalendar }: PlaybookLeadMagnetProps) {
   const [formData, setFormData] = useState({ name: '', email: '', company: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -336,6 +337,7 @@ export default function PlaybookLeadMagnet({ onOpenBooking }: PlaybookLeadMagnet
         userName={formData.name}
         onDownload={handleReDownload}
         onOpenBooking={onOpenBooking}
+        onOpenCalendar={onOpenCalendar}
       />
     </section>
   );

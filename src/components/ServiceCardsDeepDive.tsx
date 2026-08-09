@@ -4,7 +4,13 @@ import {
   ArrowUpRight, Search, FileText 
 } from 'lucide-react';
 
-export default function ServiceCardsDeepDive({ onOpenBooking }: { onOpenBooking: () => void }) {
+export default function ServiceCardsDeepDive({ 
+  onOpenBooking, 
+  onOpenCalendar 
+}: { 
+  onOpenBooking: () => void; 
+  onOpenCalendar?: () => void; 
+}) {
 
   const services = [
     {
@@ -107,16 +113,15 @@ export default function ServiceCardsDeepDive({ onOpenBooking }: { onOpenBooking:
                 </div>
 
                 {/* Micro-focused call to action */}
-                <a
-                  href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={onOpenCalendar || onOpenBooking}
                   className="w-full inline-flex items-center justify-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-mono text-[10px] font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
                   id="service-booking-btn"
                 >
                   Work with Us
                   <ArrowUpRight className="w-3.5 h-3.5 text-slate-950" />
-                </a>
+                </button>
               </motion.div>
             );
           })}

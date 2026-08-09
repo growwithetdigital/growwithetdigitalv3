@@ -15,12 +15,14 @@ import FAQSection from './components/FAQSection';
 import InsightsBlogSection from './components/InsightsBlogSection';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
+import CalendarModal from './components/CalendarModal';
 import WorkspaceHub from './components/WorkspaceHub';
 import LegalModals from './components/LegalModals';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('hero');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const [isLegalOpen, setIsLegalOpen] = useState(false);
   const [legalType, setLegalType] = useState<'privacy' | 'security'>('privacy');
@@ -28,6 +30,10 @@ export default function App() {
 
   const handleOpenBooking = () => {
     setIsBookingOpen(true);
+  };
+
+  const handleOpenCalendar = () => {
+    setIsCalendarOpen(true);
   };
 
   const handleOpenLegal = (type: 'privacy' | 'security') => {
@@ -78,6 +84,7 @@ export default function App() {
       <Navbar 
         activeSection={activeSection} 
         onOpenBooking={handleOpenBooking}
+        onOpenCalendar={handleOpenCalendar}
         onOpenWorkspaceHub={() => setIsWorkspaceOpen(true)}
       />
 
@@ -88,13 +95,13 @@ export default function App() {
       <SocialProofTicker />
 
       {/* SECTION 5: High-Converting Growth & AI Search Auditor Grader */}
-      <GrowthAuditTool onOpenBooking={handleOpenBooking} />
+      <GrowthAuditTool onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 6: High-Fidelity Creative Showcase (Dynamic Media Module) */}
       <CreativeShowcase />
 
       {/* SECTION 6.5: Instagram Content Feed Grid */}
-      <InstagramFeedGrid onOpenBooking={handleOpenBooking} />
+      <InstagramFeedGrid onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 7: Editorial Founder Bio (About Section) */}
       <FounderBio />
@@ -106,10 +113,10 @@ export default function App() {
       <ComparisonSection />
 
       {/* SECTION 8: Service Card Deep-Dive Architecture */}
-      <ServiceCardsDeepDive onOpenBooking={handleOpenBooking} />
+      <ServiceCardsDeepDive onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 9: Custom Growth Playbook Lead Magnet */}
-      <PlaybookLeadMagnet onOpenBooking={handleOpenBooking} />
+      <PlaybookLeadMagnet onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 9.5: Interactive 2026 Marketing FAQs Accordion */}
       <FAQSection />
@@ -120,12 +127,14 @@ export default function App() {
       {/* SECTION 11: The Enterprise Hub (Footer) */}
       <Footer 
         onOpenBooking={handleOpenBooking} 
+        onOpenCalendar={handleOpenCalendar}
         onOpenPrivacy={() => handleOpenLegal('privacy')}
         onOpenSecurity={() => handleOpenLegal('security')}
       />
 
       {/* INTEGRATIONS & PORTAL POPUPS */}
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
+      <CalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
       <WorkspaceHub isOpen={isWorkspaceOpen} onClose={() => setIsWorkspaceOpen(false)} />
       
       {/* Dynamic Legal Modals */}
@@ -153,15 +162,16 @@ export default function App() {
               </p>
             </div>
             <div className="flex gap-2">
-              <a
-                href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setToast(null)}
+              <button
+                type="button"
+                onClick={() => {
+                  setToast(null);
+                  handleOpenCalendar();
+                }}
                 className="bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-[9px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1"
               >
                 Work with Us
-              </a>
+              </button>
               <button
                 onClick={() => setToast(null)}
                 className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-display text-[9px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all cursor-pointer"

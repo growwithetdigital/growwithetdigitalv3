@@ -5,12 +5,14 @@ import { Menu, X, ArrowUpRight, Settings } from 'lucide-react';
 interface NavbarProps {
   activeSection: string;
   onOpenBooking: () => void;
+  onOpenCalendar?: () => void;
   onOpenWorkspaceHub?: () => void;
 }
 
 export default function Navbar({ 
   activeSection, 
   onOpenBooking, 
+  onOpenCalendar,
   onOpenWorkspaceHub,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -140,10 +142,9 @@ export default function Navbar({
 
         {/* Right aligned call to action */}
         <div className="hidden lg:flex items-center gap-3">
-          <a
-            href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onOpenCalendar || onOpenBooking}
             className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
             id="navbar-booking-btn"
           >
@@ -151,7 +152,7 @@ export default function Navbar({
               Work with Us
               <ArrowUpRight className="w-3.5 h-3.5 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
-          </a>
+          </button>
         </div>
 
         {/* Mobile menu triggers */}
@@ -221,17 +222,19 @@ export default function Navbar({
           </div>
 
           <div className="flex flex-col gap-3">
-            <a
-              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenCalendar) onOpenCalendar();
+                else onOpenBooking();
+              }}
               className="flex items-center justify-center gap-2 w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md transition-all"
               id="navbar-mobile-booking-btn"
             >
               Work with Us
               <ArrowUpRight className="w-4 h-4 text-slate-950" />
-            </a>
+            </button>
           </div>
         </div>
       )}

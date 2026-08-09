@@ -9,6 +9,7 @@ interface PDFPreviewModalProps {
   userName: string;
   onDownload: () => void;
   onOpenBooking?: () => void;
+  onOpenCalendar?: () => void;
 }
 
 export default function PDFPreviewModal({
@@ -17,7 +18,8 @@ export default function PDFPreviewModal({
   pdfBlobUrl,
   userName,
   onDownload,
-  onOpenBooking
+  onOpenBooking,
+  onOpenCalendar
 }: PDFPreviewModalProps) {
   if (!isOpen || !pdfBlobUrl) return null;
 
@@ -46,15 +48,17 @@ export default function PDFPreviewModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <a
-              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenCalendar) onOpenCalendar();
+                else if (onOpenBooking) onOpenBooking();
+              }}
               className="hidden sm:inline-flex items-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-sm whitespace-nowrap cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5 text-slate-950 shrink-0" />
               Book Free Audit on Google Calendar
-            </a>
+            </button>
 
             <button
               onClick={onDownload}

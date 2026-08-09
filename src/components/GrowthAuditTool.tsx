@@ -8,6 +8,7 @@ import {
 
 interface GrowthAuditToolProps {
   onOpenBooking: () => void;
+  onOpenCalendar?: () => void;
 }
 
 type AuditChannel = 'website' | 'social' | 'gbp';
@@ -21,7 +22,7 @@ interface AuditOption {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export default function GrowthAuditTool({ onOpenBooking }: GrowthAuditToolProps) {
+export default function GrowthAuditTool({ onOpenBooking, onOpenCalendar }: GrowthAuditToolProps) {
   const [selectedChannel, setSelectedChannel] = useState<AuditChannel>('website');
   const [inputValue, setInputValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -687,15 +688,14 @@ export default function GrowthAuditTool({ onOpenBooking }: GrowthAuditToolProps)
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
-                    <a
-                      href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={onOpenCalendar || onOpenBooking}
                       className="bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-black uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer shadow-lg hover:shadow-cyan-950/50 flex items-center justify-center gap-2"
                     >
                       <Calendar className="w-4 h-4 text-slate-950" />
                       <span>BOOK APPOINTMENT WITH ERIC</span>
-                    </a>
+                    </button>
                     <button
                       onClick={handleReset}
                       className="bg-transparent hover:bg-white/[0.05] border border-white/10 text-slate-300 hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-4 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"

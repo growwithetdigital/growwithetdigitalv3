@@ -8,6 +8,7 @@ interface SocialLinktreeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenBooking: () => void;
+  onOpenCalendar?: () => void;
 }
 
 // Custom high-fidelity brand icons
@@ -80,7 +81,8 @@ const GoogleIcon = () => (
 export default function SocialLinktreeModal({ 
   isOpen, 
   onClose, 
-  onOpenBooking 
+  onOpenBooking,
+  onOpenCalendar
 }: SocialLinktreeModalProps) {
   const [copied, setCopied] = useState(false);
 
@@ -249,11 +251,13 @@ export default function SocialLinktreeModal({
           <div className="p-5 overflow-y-auto space-y-3.5 scrollbar-thin scrollbar-thumb-slate-800">
             
             {/* Primary Calendar Booking Link */}
-            <a
-              href="https://calendar.app.google/Eg21vAqWrJN1j358A"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onClose}
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (onOpenCalendar) onOpenCalendar();
+                else onOpenBooking();
+              }}
               className="w-full p-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-cyan-400 to-brand-cyan text-slate-950 font-display font-black text-xs uppercase tracking-wider flex items-center justify-between shadow-xl shadow-cyan-950/50 hover:scale-[1.02] transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-3">
@@ -266,7 +270,7 @@ export default function SocialLinktreeModal({
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 transition-transform" />
-            </a>
+            </button>
 
             {/* Let's Connect Contact Form Button */}
             <button
