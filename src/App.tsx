@@ -29,7 +29,6 @@ export default function App() {
   const [toast, setToast] = useState<{ title: string; message: string } | null>(null);
 
   const handleOpenBooking = () => {
-    window.location.href = "mailto:hello@growwithetdigital.com?subject=Re:%20Let's%20Connect";
     setIsBookingOpen(true);
   };
 
