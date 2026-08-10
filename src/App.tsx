@@ -122,7 +122,7 @@ export default function App() {
       <FAQSection />
 
       {/* SECTION 10: Strategic Insights & Newsletter Capture */}
-      <InsightsBlogSection />
+      <InsightsBlogSection onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 11: The Enterprise Hub (Footer) */}
       <Footer 

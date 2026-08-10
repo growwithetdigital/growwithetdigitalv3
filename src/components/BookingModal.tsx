@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Send, CheckCircle2, ArrowRight, User, Mail, Building2, MessageSquare } from 'lucide-react';
-import { submitPlaybookLeadToFirestore, sendGmailMessage } from '../lib/firebase';
+import { X, Sparkles, Mail, Copy, Check, ExternalLink, ShieldCheck, RotateCcw } from 'lucide-react';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -8,81 +7,24 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
-  const [formData, setFormData] = useState({ name: '', email: '', company: '', message: '' });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
+  const emailAddress = 'hello@growwithetdigital.com';
+  const mailtoUrl = `mailto:${emailAddress}?subject=Inquiry%20via%20ET%20Digital`;
+  
+  // Clean embedded Google Form URL
+  const formEmbedUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfwtjXUwkk1oNy7P3HweXWfpylVhR8ZDpOOANUyJwZ-Z9dg5Q/viewform?embedded=true';
+  const directFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfwtjXUwkk1oNy7P3HweXWfpylVhR8ZDpOOANUyJwZ-Z9dg5Q/viewform';
 
-  const googleFormPostUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfwtjXUwkk1oNy7P3HweXWfpylVhR8ZDpOOANUyJwZ-Z9dg5Q/formResponse';
-  const recipientEmail = 'hello@growwithetdigital.com';
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // 1. Dispatch form response to user's Google Form endpoint in background
-      const bodyData = new FormData();
-      bodyData.append('entry.613580250', formData.name);
-      bodyData.append('entry.1504758920', formData.email);
-      bodyData.append('entry.707786207', `${formData.company || 'N/A'} - ${formData.message || 'No additional note'}`);
-
-      fetch(googleFormPostUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: bodyData
-      }).catch((err) => console.warn('Google Form background dispatch note:', err));
-
-      // 2. Persist lead in Firestore
-      submitPlaybookLeadToFirestore({
-        name: formData.name,
-        email: formData.email,
-        company: `${formData.company || ''} | ${formData.message || ''}`.trim()
-      }).catch((fErr) => console.warn('Firestore lead save note:', fErr));
-
-      // 3. Dispatch Gmail alert notification
-      const emailSubject = `New "Let's Connect" Lead from ${formData.name}`;
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background-color: #f8fafc;">
-          <h2 style="color: #0f172a; margin-top: 0;">New Contact Form Inquiry</h2>
-          <p style="font-size: 14px; color: #475569;">A prospective client submitted an inquiry via <strong>Let's Connect</strong>.</p>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
-          <table style="width: 100%; text-align: left; font-size: 14px; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; width: 140px; color: #0891b2;">Name:</td>
-              <td style="padding: 8px 0; color: #0f172a;">${formData.name}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; color: #0891b2;">Email:</td>
-              <td style="padding: 8px 0; color: #0f172a;"><a href="mailto:${formData.email}" style="color: #0891b2;">${formData.email}</a></td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; color: #0891b2;">Company / Brand:</td>
-              <td style="padding: 8px 0; color: #0f172a;">${formData.company || 'Not specified'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; color: #0891b2;">Message / Goal:</td>
-              <td style="padding: 8px 0; color: #0f172a;">${formData.message || 'None provided'}</td>
-            </tr>
-          </table>
-        </div>
-      `;
-      sendGmailMessage(recipientEmail, emailSubject, emailBody).catch(() => {});
-
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    } catch (err) {
-      console.error('Submit error:', err);
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(emailAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
   };
 
-  const handleResetAndClose = () => {
-    setIsSubmitted(false);
-    setFormData({ name: '', email: '', company: '', message: '' });
-    onClose();
+  const handleResetForm = () => {
+    // Reload iframe so user can send another message if desired
+    setIframeKey((prev) => prev + 1);
   };
 
   return (
@@ -96,8 +38,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     >
       {/* Overlay background */}
       <div 
-        onClick={handleResetAndClose}
-        className={`fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-150 ${
+        onClick={onClose}
+        className={`fixed inset-0 bg-slate-950/85 backdrop-blur-sm transition-opacity duration-150 ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         id="booking-modal-overlay"
@@ -105,7 +47,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
       {/* Modal Container */}
       <div 
-        className={`relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-2xl text-left overflow-hidden z-10 my-auto flex flex-col max-h-[92vh] transition-all duration-150 transform ${
+        className={`relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl text-left overflow-hidden z-10 my-auto flex flex-col max-h-[92vh] transition-all duration-150 transform ${
           isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-2'
         }`}
         id="lets-connect-modal"
@@ -114,7 +56,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         <div className="absolute -top-12 -right-12 w-36 h-36 bg-brand-cyan/15 rounded-full blur-2xl pointer-events-none" />
 
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 shrink-0 relative z-10">
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800/80 shrink-0 relative z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-2.5 rounded-xl bg-cyan-950/90 border border-brand-cyan/30 text-brand-cyan shadow-sm">
               <Sparkles className="w-5 h-5 animate-pulse" />
@@ -123,149 +65,114 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <h3 className="font-display text-base sm:text-xl font-black text-white uppercase tracking-wider">
                 Let's Connect
               </h3>
-              <p className="text-[10px] font-mono text-slate-400">DIRECT STRATEGY & INQUIRY FORM</p>
+              <p className="text-[10px] font-mono text-slate-400">DIRECT STRATEGY INQUIRY & CONTACT FORM</p>
             </div>
           </div>
           
-          <button 
-            onClick={handleResetAndClose}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono"
-            id="close-connect-modal-btn"
-            title="Close Window"
-          >
-            <span>Close</span>
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleResetForm}
+              title="Send another message"
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-brand-cyan transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">New Message</span>
+            </button>
+            <button 
+              onClick={onClose}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono"
+              id="close-connect-modal-btn"
+              title="Close Window"
+            >
+              <span>Close</span>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-slate-800 relative z-10">
-          {isSubmitted ? (
-            /* Confirmation State */
-            <div className="py-6 px-2 text-center space-y-6 max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-full bg-emerald-950/90 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-950/50">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-display text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
-                  Inquiry Received!
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                  Thank you for reaching out to ET Digital. Our team has received your submission and will get back to you within 24 hours.
-                </p>
-              </div>
+        {/* Form Body - Clean Embedded Form */}
+        <div className="flex-1 overflow-y-auto py-3 my-1 scrollbar-thin scrollbar-thumb-slate-800 relative z-10 space-y-3">
+          <div className="rounded-xl bg-white border border-slate-800/80 overflow-hidden min-h-[500px] shadow-inner">
+            <iframe
+              key={iframeKey}
+              src={formEmbedUrl}
+              width="100%"
+              height="556"
+              frameBorder="0"
+              marginHeight={0}
+              marginWidth={0}
+              className="w-full h-[550px] rounded-xl border-0 bg-white"
+              title="ET Digital Connect Form"
+              loading="eager"
+            >
+              Loading Form...
+            </iframe>
+          </div>
 
-              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-left text-xs text-slate-400 space-y-1 font-mono">
-                <p><strong className="text-brand-cyan">Status:</strong> Sent Successfully</p>
-                <p><strong className="text-brand-cyan">Target:</strong> hello@growwithetdigital.com</p>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleResetAndClose}
-                  className="w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-cyan-950/50 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
-                >
-                  <span>Close & Continue Browsing Website</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+          {/* Quick Direct Email Option Bar - Opens native email client in new window */}
+          <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 font-sans">
+            <div className="flex items-center gap-2 text-xs text-slate-300 text-center sm:text-left">
+              <ShieldCheck className="w-4 h-4 text-brand-cyan shrink-0 hidden sm:block" />
+              <span>
+                Prefer native email? <strong className="text-white font-mono">{emailAddress}</strong>
+              </span>
             </div>
-          ) : (
-            /* Quick Native Form */
-            <form onSubmit={handleSubmit} className="space-y-4 px-1">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider">
-                  Your Name <span className="text-brand-cyan">*</span>
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Sarah Jenkins"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-brand-cyan rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider">
-                  Email Address <span className="text-brand-cyan">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. sarah@company.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-brand-cyan rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider">
-                  Company / Brand
-                </label>
-                <div className="relative">
-                  <Building2 className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="e.g. Apex Health & Fitness"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-brand-cyan rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider">
-                  How can we help you grow?
-                </label>
-                <div className="relative">
-                  <MessageSquare className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
-                  <textarea
-                    rows={3}
-                    placeholder="Tell us about your project or growth objectives..."
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-brand-cyan rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all resize-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-cyan-950/50 cursor-pointer flex items-center justify-center gap-2 mt-2 active:scale-95 disabled:opacity-50"
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <a
+                href={mailtoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold uppercase tracking-wider py-2 px-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-slate-700/80"
               >
-                {isSubmitting ? (
-                  <span>Submitting Inquiry...</span>
+                <Mail className="w-3.5 h-3.5 text-brand-cyan" />
+                <span>Open Email</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+              <button
+                type="button"
+                onClick={handleCopyEmail}
+                className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold uppercase tracking-wider py-2 px-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-slate-700/80 cursor-pointer"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Copied!</span>
+                  </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 text-slate-950" />
-                    <span>Submit Inquiry</span>
+                    <Copy className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Copy Email</span>
                   </>
                 )}
               </button>
-            </form>
-          )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
         <div className="pt-3 border-t border-slate-800/80 shrink-0 flex items-center justify-between relative z-10">
-          <span className="text-[11px] font-mono text-slate-400">
-            hello@growwithetdigital.com
-          </span>
+          <div className="flex items-center gap-3 text-slate-400 text-[11px] font-sans">
+            <a 
+              href={directFormUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-brand-cyan flex items-center gap-1 font-mono text-slate-400 hover:underline transition-colors"
+            >
+              <span>Open in New Tab</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <span className="text-slate-600">|</span>
+            <button
+              onClick={handleResetForm}
+              className="hover:text-white font-mono text-slate-400 flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3 text-brand-cyan" />
+              <span>Send Another Response</span>
+            </button>
+          </div>
           <button
-            onClick={handleResetAndClose}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-display text-xs font-bold uppercase tracking-wider px-5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+            onClick={onClose}
+            className="bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 active:scale-95"
           >
             <span>Close Window</span>
             <X className="w-3.5 h-3.5" />
