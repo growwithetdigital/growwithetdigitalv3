@@ -160,7 +160,7 @@ export default function Footer({
 
               <div className="space-y-2 text-xs pt-2">
                 <a 
-                  href="mailto:hello@growwithetdigital.com" 
+                  href="mailto:hello@growwithetdigital.com?subject=Re%3A%20Let's%20Connect" 
                   className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
                   <Mail className="w-4 h-4 text-brand-cyan/70" />
