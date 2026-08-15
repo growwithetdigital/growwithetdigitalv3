@@ -4,7 +4,7 @@ import { ArrowUpRight, Calendar, Clock, BookOpen, Sparkles } from 'lucide-react'
 import ArticleModal, { ArticleData } from './ArticleModal';
 import googleSearchShiftImg from '../assets/images/google_search_shift_1786291751268.jpg';
 import revenueMetricsImg from '../assets/images/revenue_metrics_1786291769449.jpg';
-import growthSystemEngineImg from '../assets/images/stop_content_system_clean_1786293327281.jpg';
+import growthSystemEngineImg from '../assets/images/content_system_engine_1786799487550.jpg';
 
 interface InsightsBlogSectionProps {
   onOpenBooking?: () => void;
