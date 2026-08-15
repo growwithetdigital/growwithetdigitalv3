@@ -7,6 +7,8 @@ interface BookingModalProps {
   onClose: () => void;
 }
 
+const WEB3FORMS_ACCESS_KEY = (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || '0d9d7632-cf6b-4566-b29e-09b7b8bb7806';
+
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +26,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [errorMessage, setErrorMessage] = useState('');
 
   const primaryRecipient = 'hello@growwithetdigital.com';
-  const backupRecipient = 'contactetdigital@gmail.com';
 
   // Validation logic matching ET Form rules
   const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
@@ -59,7 +60,35 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     setIsLoading(true);
 
     try {
-      // 1. Submit lead details to Firestore database
+      // 1. Direct Email Delivery via Web3Forms API to your inbox
+      const web3Payload = {
+        access_key: WEB3FORMS_ACCESS_KEY,
+        name: fullName.trim(),
+        email: email.trim(),
+        replyto: email.trim(),
+        subject: `🚀 New ET Digital Inquiry: ${fullName.trim()}`,
+        message: message.trim(),
+        from_name: 'ET Digital Growth Website',
+      };
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(web3Payload),
+        });
+        const result = await response.json();
+        if (!result.success) {
+          console.warn('Web3Forms response status:', result);
+        }
+      } catch (wErr) {
+        console.warn('Web3Forms dispatch attempt:', wErr);
+      }
+
+      // 2. Submit lead details to Firestore database
       submitBookingToFirestore({
         name: fullName.trim(),
         email: email.trim(),
@@ -70,7 +99,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         console.warn('Firestore booking note:', fErr);
       });
 
-      // 2. Submit lead details to Google Form
+      // 3. Submit lead details to Google Form
       const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfwtjXUwkk1oNy7P3HweXWfpylVhR8ZDpOOANUyJwZ-Z9dg5Q/formResponse';
       const googleFormData = new FormData();
       googleFormData.append('entry.2005620554', fullName.trim());
@@ -83,30 +112,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         body: googleFormData,
       }).catch((err) => console.warn('Google Form fetch submission note:', err));
 
-      // 3. Multi-channel Email Dispatch (Web3Forms API + Fallback endpoints)
-      // Dispatches directly to your inbox without requiring a client login or Google auth popup
-      const web3FormsData = new FormData();
-      const web3AccessKey = (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || '';
-      
-      if (web3AccessKey) {
-        web3FormsData.append('access_key', web3AccessKey);
-      }
-      web3FormsData.append('name', fullName.trim());
-      web3FormsData.append('email', email.trim());
-      web3FormsData.append('replyto', email.trim());
-      web3FormsData.append('subject', `🚀 New ET Digital Inquiry: ${fullName.trim()}`);
-      web3FormsData.append('message', message.trim());
-      web3FormsData.append('from_name', 'ET Digital Growth Website');
-
-      // If access key is set in env, dispatch via Web3Forms API
-      if (web3AccessKey) {
-        fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          body: web3FormsData,
-        }).catch((err) => console.warn('Web3Forms dispatch note:', err));
-      }
-
-      // 4. Dispatch via Gmail API if user has authenticated OAuth
+      // 4. Secondary Gmail API notification
       const notificationSubject = `New Strategy Inquiry: ${fullName.trim()}`;
       const emailBody = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background-color: #f8fafc;">
@@ -218,7 +224,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   Message Sent Successfully!
                 </h4>
                 <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                  Thank you, <strong className="text-white">{fullName}</strong>. Your message has been routed directly to our strategy team at <span className="font-mono text-cyan-300">{primaryRecipient}</span>.
+                  Thank you, <strong className="text-white">{fullName}</strong>. Your message has been routed directly to our inbox. We will review your inquiry and get back to you shortly.
                 </p>
               </div>
 

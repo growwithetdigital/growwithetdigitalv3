@@ -69,6 +69,25 @@ export default function PlaybookLeadMagnet({ onOpenBooking, onOpenCalendar }: Pl
       setIsLoading(false);
 
       // 5. Save Lead & Send Notification Email in background
+      const web3Payload = {
+        access_key: (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || '0d9d7632-cf6b-4566-b29e-09b7b8bb7806',
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        replyto: formData.email.trim(),
+        subject: `📘 New Playbook Download: ${formData.name.trim()} (${formData.company || 'Direct Prospect'})`,
+        message: `Prospect ${formData.name.trim()} (${formData.email.trim()}) from company "${formData.company || 'N/A'}" downloaded The Digital Growth Playbook.`,
+        from_name: 'ET Digital Playbook System',
+      };
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(web3Payload),
+      }).catch((wErr) => console.warn('Playbook Web3Forms dispatch note:', wErr));
+
       submitPlaybookLeadToFirestore({
         name: formData.name,
         email: formData.email,
