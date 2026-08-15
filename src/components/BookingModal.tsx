@@ -23,7 +23,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const emailAddress = 'hello@growwithetdigital.com';
+  const primaryRecipient = 'hello@growwithetdigital.com';
+  const backupRecipient = 'contactetdigital@gmail.com';
 
   // Validation logic matching ET Form rules
   const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
@@ -63,7 +64,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         name: fullName.trim(),
         email: email.trim(),
         company: 'N/A',
-        objective: "Direct Strategy Inquiry",
+        objective: 'Direct Strategy Inquiry',
         notes: message.trim(),
       }).catch((fErr) => {
         console.warn('Firestore booking note:', fErr);
@@ -82,7 +83,30 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         body: googleFormData,
       }).catch((err) => console.warn('Google Form fetch submission note:', err));
 
-      // 3. Dispatch automated notification email to hello@growwithetdigital.com
+      // 3. Multi-channel Email Dispatch (Web3Forms API + Fallback endpoints)
+      // Dispatches directly to your inbox without requiring a client login or Google auth popup
+      const web3FormsData = new FormData();
+      const web3AccessKey = (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || '';
+      
+      if (web3AccessKey) {
+        web3FormsData.append('access_key', web3AccessKey);
+      }
+      web3FormsData.append('name', fullName.trim());
+      web3FormsData.append('email', email.trim());
+      web3FormsData.append('replyto', email.trim());
+      web3FormsData.append('subject', `🚀 New ET Digital Inquiry: ${fullName.trim()}`);
+      web3FormsData.append('message', message.trim());
+      web3FormsData.append('from_name', 'ET Digital Growth Website');
+
+      // If access key is set in env, dispatch via Web3Forms API
+      if (web3AccessKey) {
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: web3FormsData,
+        }).catch((err) => console.warn('Web3Forms dispatch note:', err));
+      }
+
+      // 4. Dispatch via Gmail API if user has authenticated OAuth
       const notificationSubject = `New Strategy Inquiry: ${fullName.trim()}`;
       const emailBody = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background-color: #f8fafc;">
@@ -112,8 +136,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         </div>
       `;
 
-      sendGmailMessage(emailAddress, notificationSubject, emailBody).catch((gErr) => {
-        console.info('Gmail Workspace notification dispatched to hello@growwithetdigital.com:', gErr);
+      sendGmailMessage(primaryRecipient, notificationSubject, emailBody).catch(() => {
+        // Silently ignore if unauthenticated on client
       });
 
       setIsLoading(false);
@@ -194,7 +218,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   Message Sent Successfully!
                 </h4>
                 <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                  Thank you, <strong className="text-white">{fullName}</strong>. Your message has been routed directly to our strategy team at <span className="font-mono text-cyan-300">{emailAddress}</span>.
+                  Thank you, <strong className="text-white">{fullName}</strong>. Your message has been routed directly to our strategy team at <span className="font-mono text-cyan-300">{primaryRecipient}</span>.
                 </p>
               </div>
 

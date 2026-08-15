@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getAnalytics, isSupported } from 'firebase/analytics';
 import { 
   getAuth, 
   signInWithPopup, 
@@ -22,6 +23,18 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Initialize Firebase Analytics if supported in browser environment
+export let analytics: any = null;
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  }).catch(() => {
+    // Analytics optional fallback
+  });
+}
 
 // Google Auth Provider setup with Workspace scopes
 export const provider = new GoogleAuthProvider();
