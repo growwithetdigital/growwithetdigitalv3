@@ -151,6 +151,7 @@ export default function InsightsBlogSection({
       date: 'Jul 2026',
       readTime: '5 Min Read',
       imageUrl: 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1786843247/IMG_9308_tzxld6.jpg',
+      imageFit: 'contain',
       sourcesCited: "Content Marketing Institute (via genesysgrowth.com and toolfountain.com content marketing statistics roundups, 2026), Digital Applied Content Marketing Statistics 2026, HubSpot/Ahrefs (via ToolFountain aggregated benchmarks).",
       sections: [
         {
@@ -256,12 +257,16 @@ export default function InsightsBlogSection({
             >
               <div className="flex flex-col flex-1">
                 
-                {/* Clean, uncluttered photographic featured image */}
-                <div className="relative h-52 w-full rounded-2xl overflow-hidden mb-5 shadow-sm border border-slate-200 select-none group-hover:shadow-md transition-all">
+                {/* Clean, uncluttered photographic/graphic featured image */}
+                <div className="relative h-52 w-full rounded-2xl overflow-hidden mb-5 shadow-sm border border-slate-200 select-none group-hover:shadow-md transition-all bg-slate-950 flex items-center justify-center">
                   <img
                     src={article.imageUrl}
                     alt={article.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className={`w-full h-full transition-transform duration-700 group-hover:scale-105 ${
+                      article.imageFit === 'contain' 
+                        ? 'object-contain p-2' 
+                        : 'object-cover'
+                    } ${article.imagePosition || 'object-center'}`}
                     referrerPolicy="no-referrer"
                   />
                 </div>

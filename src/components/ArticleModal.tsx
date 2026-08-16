@@ -9,6 +9,8 @@ export interface ArticleData {
   date: string;
   readTime: string;
   imageUrl: string;
+  imageFit?: 'cover' | 'contain';
+  imagePosition?: string;
   sections: {
     heading?: string;
     paragraphs: string[];
@@ -131,14 +133,18 @@ export default function ArticleModal({
             </div>
 
             {/* Featured Hero Header Image */}
-            <div className="relative w-full h-56 sm:h-80 rounded-2xl overflow-hidden border border-slate-200/90 shadow-md">
+            <div className="relative w-full h-56 sm:h-80 rounded-2xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-950 flex items-center justify-center">
               <img 
                 src={article.imageUrl} 
                 alt={article.title}
-                className="w-full h-full object-cover"
+                className={`w-full h-full transition-all ${
+                  article.imageFit === 'contain' 
+                    ? 'object-contain p-2 sm:p-4' 
+                    : 'object-cover'
+                } ${article.imagePosition || 'object-center'}`}
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent pointer-events-none" />
             </div>
           </div>
 
