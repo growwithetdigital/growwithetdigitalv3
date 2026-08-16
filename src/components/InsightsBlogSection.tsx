@@ -150,7 +150,7 @@ export default function InsightsBlogSection({
       summary: "83% of marketers agree quality beats quantity. Learn how re-engineering existing assets lifts organic traffic by 35% and why content systems beat content calendars.",
       date: 'Jul 2026',
       readTime: '5 Min Read',
-      imageUrl: growthSystemEngineImg,
+      imageUrl: 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1786843247/IMG_9308_tzxld6.jpg',
       sourcesCited: "Content Marketing Institute (via genesysgrowth.com and toolfountain.com content marketing statistics roundups, 2026), Digital Applied Content Marketing Statistics 2026, HubSpot/Ahrefs (via ToolFountain aggregated benchmarks).",
       sections: [
         {
