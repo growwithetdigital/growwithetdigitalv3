@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowUpRight, Calendar, Clock, BookOpen, Sparkles } from 'lucide-react';
 import ArticleModal, { ArticleData } from './ArticleModal';
-import googleSearchShiftImg from '../assets/images/google_search_shift_1786291751268.jpg';
-import revenueMetricsImg from '../assets/images/revenue_metrics_1786291769449.jpg';
-import growthSystemEngineImg from '../assets/images/content_system_engine_1786799487550.jpg';
 
 interface InsightsBlogSectionProps {
   onOpenBooking?: () => void;
@@ -27,7 +24,8 @@ export default function InsightsBlogSection({
       summary: "Multiple studies show organic click-through rates dropping between 34% and 61% when AI Overviews appear. Learn why buyers are forming opinions in AI chat windows before reaching your website.",
       date: 'Jul 2026',
       readTime: '5 Min Read',
-      imageUrl: googleSearchShiftImg,
+      imageUrl: 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1787432592/ReactNativeBlobUtilTmp_cr6nszm9d7faak1zyxcpd_jmhsv9.jpg',
+      imageFit: 'cover',
       sourcesCited: "Seer Interactive (2.43B impression study), Ahrefs (300,000 keyword analysis), 6sense 2025 Buyer Experience Report, BrightEdge/Amsive AI citation research, 10Fold/Sapio Research (400 marketing executives).",
       sections: [
         {
@@ -86,7 +84,8 @@ export default function InsightsBlogSection({
       summary: "Only 30% of CMOs are confident measuring ROI, yet 64% base next year's budget on last year's ROI numbers. Discover how data-driven attribution drives 1.7x faster revenue growth.",
       date: 'Jul 2026',
       readTime: '5 Min Read',
-      imageUrl: revenueMetricsImg,
+      imageUrl: 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1787428329/ReactNativeBlobUtilTmp_tehhmoxg1gas9q5v7rzh_ymeomj.jpg',
+      imageFit: 'cover',
       sourcesCited: "Nielsen 2025 Annual Marketing Report / Deloitte (via PPCChief 2026), Marketing LTB Attribution Analysis 2025, Digital Applied Marketing Attribution Statistics 2026, ZoomInfo/Pipeline vanity metrics research.",
       sections: [
         {
@@ -151,7 +150,8 @@ export default function InsightsBlogSection({
       date: 'Jul 2026',
       readTime: '5 Min Read',
       imageUrl: 'https://res.cloudinary.com/dnpvgq7gt/image/upload/v1786843247/IMG_9308_tzxld6.jpg',
-      imageFit: 'contain',
+      imageFit: 'cover',
+      imagePosition: 'object-bottom',
       sourcesCited: "Content Marketing Institute (via genesysgrowth.com and toolfountain.com content marketing statistics roundups, 2026), Digital Applied Content Marketing Statistics 2026, HubSpot/Ahrefs (via ToolFountain aggregated benchmarks).",
       sections: [
         {
