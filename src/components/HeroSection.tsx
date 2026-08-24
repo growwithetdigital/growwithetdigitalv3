@@ -1,14 +1,68 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowUpRight } from 'lucide-react';
 
 export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoFailed, setVideoFailed] = useState(false);
+
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Force mobile WebKit / iOS Safari autoplay compliance
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.loop = true;
+    video.autoplay = true;
+
+    const playVideo = () => {
+      if (video.paused) {
+        video.play().catch(() => {
+          // Retry playback on user interaction if mobile browser strictly restricts initial autoplay
+        });
+      }
+    };
+
+    // Attempt immediate playback
+    playVideo();
+
+    // Auto-resume playback on tab visibility change or window focus
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        playVideo();
+      }
+    };
+
+    // Auto-resume on first mobile touch if initially blocked by low-power mode
+    const handleFirstTouch = () => {
+      playVideo();
+      window.removeEventListener('touchstart', handleFirstTouch);
+      window.removeEventListener('click', handleFirstTouch);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', playVideo);
+    window.addEventListener('touchstart', handleFirstTouch, { passive: true });
+    window.addEventListener('click', handleFirstTouch, { passive: true });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', playVideo);
+      window.removeEventListener('touchstart', handleFirstTouch);
+      window.removeEventListener('click', handleFirstTouch);
+    };
+  }, []);
 
   return (
     <section 
@@ -80,33 +134,49 @@ export default function HeroSection({ onOpenBooking }: { onOpenBooking: () => vo
             <div className="absolute w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-brand-cyan/[0.04] rounded-full blur-[100px] pointer-events-none" />
 
             {/* Clean square logo container with rounded corners - no dark borders */}
-            <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl shadow-cyan-950/40">
+            <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl shadow-cyan-950/40 bg-[#111111]">
               
-              {/* Native HTML5 Video rendering edge-to-edge as a rounded square without any outer dark borders */}
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover pointer-events-none select-none rounded-3xl"
-              >
-                <source 
-                  src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.mp4" 
-                  type="video/mp4" 
-                />
-                <source 
-                  src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.webm" 
-                  type="video/webm" 
-                />
-                {/* Fallback to iframe if native streaming formats are blocked */}
-                <iframe
-                  src="https://player.cloudinary.com/embed/?cloud_name=dnpvgq7gt&public_id=Here_is_my_logo._instructions_202606260400_woxxvs&player[autoplay]=true&player[muted]=true&player[loop]=true&player[controls]=false&player[show_logo]=false&player[skin]=dark"
-                  className="w-full h-full border-0 pointer-events-none select-none rounded-3xl"
-                  allow="autoplay; encrypted-media"
-                  title="ET Digital Brand Logo Animation"
+              {!videoFailed ? (
+                /* Native HTML5 Video rendering edge-to-edge with seamless mobile loop & autoplay */
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  onEnded={() => {
+                    // Fail-safe manual loop restart for mobile browsers
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = 0;
+                      videoRef.current.play().catch(() => {});
+                    }
+                  }}
+                  onError={() => setVideoFailed(true)}
+                  className="w-full h-full object-cover pointer-events-none select-none rounded-3xl"
+                >
+                  <source 
+                    src="https://res.cloudinary.com/dnpvgq7gt/video/upload/q_auto,vc_auto/Here_is_my_logo._instructions_202606260400_woxxvs.mp4" 
+                    type="video/mp4" 
+                  />
+                  <source 
+                    src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.mp4" 
+                    type="video/mp4" 
+                  />
+                  <source 
+                    src="https://res.cloudinary.com/dnpvgq7gt/video/upload/Here_is_my_logo._instructions_202606260400_woxxvs.webm" 
+                    type="video/webm" 
+                  />
+                </video>
+              ) : (
+                /* High-performance animated / interactive fallback */
+                <img
+                  src="https://res.cloudinary.com/dnpvgq7gt/image/upload/f_auto,q_auto/Here_is_my_logo._instructions_202606260400_woxxvs.gif"
+                  alt="ET Digital Brand Logo Animation"
+                  className="w-full h-full object-cover rounded-3xl select-none pointer-events-none"
                   referrerPolicy="no-referrer"
                 />
-              </video>
+              )}
             </div>
 
             {/* ENGAGE.CONVERT.GROW. Tagline */}
