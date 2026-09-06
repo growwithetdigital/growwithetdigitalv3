@@ -96,9 +96,12 @@ export interface GeneratedContentItem {
   blog_post: {
     title: string;
     target_keyword: string;
-    word_count: number;
+    word_count?: number;
     markdown_content: string;
     meta_description: string;
+    natural_photo_url?: string;
+    photo_caption?: string;
+    read_time?: string;
   };
   social_captions: {
     linkedin: string;
@@ -112,4 +115,17 @@ export interface GeneratedContentItem {
     prompt_used?: string;
     dimensions?: { width: number; height: number };
   };
+  social_angles?: Array<{
+    id: string;
+    angle_title: string;
+    angle_badge: string;
+    linkedin: string;
+    twitter_x: string;
+    facebook: string;
+    instagram_threads: string;
+    email_subject?: string;
+    email_preview?: string;
+    email_body?: string;
+    lead_magnet_hook?: string;
+  }>;
 }

@@ -198,7 +198,7 @@ export default function WorkspaceHub({ isOpen, onClose }: WorkspaceHubProps) {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await googleSignIn();
+      const result = await googleSignIn(true);
       if (result) {
         setUser(result.user);
         setToken(result.accessToken);

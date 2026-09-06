@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Sparkles, Copy, Check, Share2, Download, ExternalLink, 
-  Lock, RefreshCw, Clock, ArrowRight, ArrowLeft, Globe, 
-  ShieldCheck, AlertCircle, FileText, LayoutDashboard,
-  LogOut, Crown, CheckCircle2, ChevronRight, Layers,
-  Compass, BarChart3, HelpCircle, BookOpen, Target,
-  Volume2, Building2, User, MapPin, Swords
+  LayoutDashboard, Compass, Activity, Layers, FileBarChart,
+  MessageSquareText, Gauge, Users, Map, NotebookPen,
+  FolderOpen, Sun, Moon, ArrowUpRight, Circle, CheckCircle2,
+  Sparkles, ChevronRight, ChevronDown, FileText, Linkedin,
+  Instagram, Facebook, Mail, Gift, Search, ArrowLeft, LogOut,
+  Crown, Lock, RefreshCw, Clock, Target, BarChart3, BookOpen,
+  ShieldCheck, AlertCircle, Copy, Check
 } from 'lucide-react';
 import { 
   UserProfile, 
-  GeneratedContentItem, 
-  UserTier 
+  GeneratedContentItem 
 } from '../../types';
 import { 
   checkUserGenerationEligibility, 
@@ -19,6 +19,13 @@ import {
   saveContentToLibrary,
   googleSignOut 
 } from '../../lib/firebase';
+import { 
+  stripMarkdownFormatting, 
+  CURATED_NATURAL_PHOTOS, 
+  generateSocialPromotionAngles,
+  SocialAnglePackage 
+} from '../../utils/contentEngineHelpers';
+import ContentStudio from './ContentStudio';
 import BusinessProfileForm from './BusinessProfileForm';
 import AuditorArchivePanel from './AuditorArchivePanel';
 import FeaturedInsightsPanel from './FeaturedInsightsPanel';
@@ -31,7 +38,106 @@ interface WhiteboardShellProps {
   onOpenBooking: () => void;
 }
 
-type DashboardTab = 'overview' | 'insights' | 'auditor' | 'profile';
+// Brand Palette (ET Digital Design System)
+const palette = {
+  cyan: "#0EA5B7",
+  cyanBright: "#14C4D6",
+  amber: "#C9974D",
+};
+
+// Signature UI: MomentumBar component
+export function MomentumBar({ fill, max = 4, size = "md" }: { fill: number; max?: number; size?: "sm" | "md" }) {
+  const segs = Array.from({ length: max }, (_, i) => i < fill);
+  const h = size === "sm" ? "h-1.5" : "h-2";
+  return (
+    <div className={`flex gap-1 ${h} w-full`}>
+      {segs.map((on, i) => (
+        <div
+          key={i}
+          className={`flex-1 rounded-full transition-colors ${
+            on ? "bg-[var(--accent)]" : "bg-[var(--track)]"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Reusable Status Pill
+export function StatusPill({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    Excellent: "text-[var(--accent)] border-[var(--accent)]/40 bg-[var(--accent)]/10",
+    Strong: "text-[var(--accent)] border-[var(--accent)]/30 bg-[var(--accent)]/5",
+    Developing: "text-[var(--muted)] border-[var(--border)] bg-[var(--surface2)]",
+    "Needs Attention": "text-[#C9974D] border-[#C9974D]/30 bg-[#C9974D]/10",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-mono uppercase tracking-wide ${map[status] || map.Developing}`}
+    >
+      {status}
+    </span>
+  );
+}
+
+// Priority Pill
+export function PriorityPill({ priority }: { priority: string }) {
+  const map: Record<string, string> = {
+    High: "text-[#C9974D] bg-[#C9974D]/10 border-[#C9974D]/30",
+    Medium: "text-[var(--text)] bg-[var(--surface2)] border-[var(--border)]",
+    Low: "text-[var(--muted)] bg-[var(--surface2)] border-[var(--border)]",
+  };
+  return (
+    <span className={`rounded-md border px-2 py-0.5 text-[11px] font-mono uppercase tracking-wide ${map[priority] || map.Medium}`}>
+      {priority}
+    </span>
+  );
+}
+
+// Card Primitive
+export function Card({ 
+  children, 
+  className = "", 
+  padding = "p-5" 
+}: { 
+  children: React.ReactNode; 
+  className?: string; 
+  padding?: string; 
+  key?: React.Key;
+}) {
+  return (
+    <div className={`rounded-xl border border-[var(--border)] bg-[var(--surface)] ${padding} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// Section Header
+export function SectionHeader({ eyebrow, title, desc }: { eyebrow?: string; title: string; desc?: string }) {
+  return (
+    <div className="mb-6">
+      {eyebrow && (
+        <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--accent)] font-semibold">
+          {eyebrow}
+        </div>
+      )}
+      <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)]">{title}</h1>
+      {desc && <p className="mt-1.5 max-w-2xl text-sm text-[var(--muted)] leading-relaxed">{desc}</p>}
+    </div>
+  );
+}
+
+// Navigation Tabs Definition
+type NavTabId = 
+  | 'overview' 
+  | 'content_studio' 
+  | 'foundation' 
+  | 'insights' 
+  | 'auditor' 
+  | 'profile' 
+  | 'roadmap' 
+  | 'competitors' 
+  | 'upgrade';
 
 export default function WhiteboardShell({
   user,
@@ -40,20 +146,19 @@ export default function WhiteboardShell({
   onCloseDashboard,
   onOpenBooking,
 }: WhiteboardShellProps) {
-  const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+  const [activeTab, setActiveTab] = useState<NavTabId>('overview');
+  const [dark, setDark] = useState(true);
   const [contentList, setContentList] = useState<GeneratedContentItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<GeneratedContentItem | null>(null);
-  const [activeSocialTab, setActiveSocialTab] = useState<'linkedin' | 'twitter_x' | 'facebook' | 'instagram_threads'>('linkedin');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genStepText, setGenStepText] = useState('');
   const [genError, setGenError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Check 90-day rate limit
+  // Check 90-day rate limit for Free tier
   const eligibility = checkUserGenerationEligibility(profile);
 
-  // Check if profile has all 6 required fields for AI voice calibration
+  // Check if profile has all 6 required fields for AI voice leverage
   const isProfileComplete = Boolean(
     profile?.business_name?.trim() &&
     profile?.contact?.trim() &&
@@ -63,26 +168,122 @@ export default function WhiteboardShell({
     profile?.competitor_website?.trim()
   );
 
+  // Theme Variables
+  const themeStyles = useMemo(() => {
+    return dark
+      ? {
+          "--bg": "#0A0A0A",
+          "--surface": "#111213",
+          "--surface2": "#17181A",
+          "--border": "#232527",
+          "--text": "#F2F3F3",
+          "--muted": "#8A8F94",
+          "--accent": palette.cyanBright,
+          "--track": "#232527",
+        }
+      : {
+          "--bg": "#FAFAFA",
+          "--surface": "#FFFFFF",
+          "--surface2": "#F2F3F4",
+          "--border": "#E6E7E9",
+          "--text": "#0A0A0A",
+          "--muted": "#6B7075",
+          "--accent": palette.cyan,
+          "--track": "#E6E7E9",
+        };
+  }, [dark]);
+
+  // Client Details
+  const clientName = profile?.business_name || profile?.displayName || 'Eric Thomas';
+  const clientLocation = profile?.location || 'Los Angeles';
+  const clientMission = profile?.mission_statement || 'business coaching to inspire storytelling';
+  const clientAudience = profile?.target_audience || 'small business owners and leaders near Agoura hills';
+  const clientCompetitor = profile?.competitor_website || 'https://ericthomas.com/';
+  const clientWebsite = profile?.website_url || 'https://growwithetdigital.com';
+
+  // Fallback initial sample package so dashboard is vibrant upon sign-in
+  const defaultSampleItem: GeneratedContentItem = useMemo(() => {
+    const title = `${clientName}: The High-Velocity Growth Blueprint for ${clientLocation}`;
+    const targetKeyword = `${clientName} ${clientLocation} coaching`;
+    const markdown = `# ${title}
+
+In today's fast-evolving market, high-intent buyers in **${clientLocation}** don't have time to wade through generic marketing noise. They want definitive solutions from trusted authorities who understand their specific challenges.
+
+At **${clientName}**, our core mission is clear: *"${clientMission}"*. Yet even market-leading organizations face an urgent bottleneck: converting online discovery into qualified, predictable customer conversations.
+
+---
+
+## 1. The Differentiation Advantage
+
+While competitors like those at ${clientCompetitor} continue relying on outdated, sporadic marketing tactics, modern buyers evaluate trust through clear proof, structured authority, and direct answers. 
+
+To lead the market, **${clientName}** must leverage three strategic differentiators:
+* **Hyper-Relevant Geographic Visibility:** Capturing high-intent local and regional search queries from **${clientAudience}**.
+* **Zero-Friction Conversion:** Replacing convoluted contact forms with instant diagnostic tools and frictionless intake channels.
+* **Consistent Brand Narrative:** Maintaining an **Authoritative & Strategic** tone across every digital touchpoint—from first impression through direct contact with ${clientName}.
+
+---
+
+## 2. Immediate 30-Day Execution Priority
+
+To establish undeniable category presence, **${clientName}** must prioritize:
+1. **Solidify Local Entity Markup:** Ensure your Google Business Profile, local schemas, and search citations align with your primary offerings in **${clientLocation}**.
+2. **Deploy Intent-Driven Content:** Answer the top 5 questions high-value prospects ask before making an investment decision.
+3. **Streamline Conversion Paths:** Drive all inbound inquiries directly to your core service capabilities.
+
+By operating with structured systems rather than random tactics, **${clientName}** turns regional visibility into compounding revenue. Visit [${clientName}](${clientWebsite}) to explore our full capabilities.`;
+
+    const angles = generateSocialPromotionAngles(profile, title, markdown);
+
+    return {
+      id: 'default_growth_pack',
+      uid: user?.uid || 'user_1',
+      type: 'quarterly_growth_pack',
+      created_at: new Date().toISOString(),
+      blog_post: {
+        title,
+        target_keyword: targetKeyword,
+        word_count: 410,
+        markdown_content: markdown,
+        meta_description: `An executive growth blueprint for ${clientName} in ${clientLocation}: How our mission-driven storytelling outperforms conventional marketing.`,
+        natural_photo_url: CURATED_NATURAL_PHOTOS[0].url,
+        photo_caption: CURATED_NATURAL_PHOTOS[0].title,
+        read_time: '3 Min Read'
+      },
+      social_captions: {
+        linkedin: angles[0].linkedin,
+        twitter_x: angles[0].twitter_x,
+        facebook: angles[0].facebook,
+        instagram_threads: angles[0].instagram_threads
+      },
+      graphic: {
+        public_download_url: CURATED_NATURAL_PHOTOS[0].url,
+        prompt_used: `Natural executive coaching and storytelling photograph in ${clientLocation}`,
+        dimensions: { width: 1600, height: 900 }
+      },
+      social_angles: angles
+    };
+  }, [clientName, clientLocation, clientMission, clientAudience, clientCompetitor, clientWebsite, profile, user?.uid]);
+
   // Load content library from Firestore
   useEffect(() => {
     if (user?.uid) {
       fetchUserContentLibrary(user.uid).then((items) => {
-        setContentList(items);
-        if (items.length > 0 && !selectedItem) {
-          setSelectedItem(items[0]);
+        if (items && items.length > 0) {
+          setContentList(items);
+          if (!selectedItem) setSelectedItem(items[0]);
+        } else {
+          setContentList([defaultSampleItem]);
+          setSelectedItem(defaultSampleItem);
         }
       });
+    } else {
+      setContentList([defaultSampleItem]);
+      setSelectedItem(defaultSampleItem);
     }
-  }, [user?.uid]);
-
-  const copyText = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2500);
-  };
+  }, [user?.uid, defaultSampleItem]);
 
   const handleGeneratePackage = async () => {
-    // Require completed business profile for AI voice leverage
     if (!isProfileComplete) {
       setActiveTab('profile');
       return;
@@ -98,137 +299,78 @@ export default function WhiteboardShell({
     setGenStepText('Synthesizing business profile & competitive positioning...');
 
     try {
-      await new Promise(r => setTimeout(r, 700));
-      setGenStepText(`Consulting Gemini AI: Calibrating ${profile?.brand_voice || 'Authoritative'} voice for ${profile?.business_name}...`);
-      
-      const promptBusiness = profile?.business_name || 'Modern Enterprise';
-      const promptContact = profile?.contact || '';
-      const promptWebsite = profile?.website_url || 'https://growwithetdigital.com';
-      const promptLocation = profile?.location || 'Nationwide';
-      const promptMission = profile?.mission_statement || 'Delivering high-impact solutions with measurable customer outcomes.';
-      const promptCompetitor = profile?.competitor_website || '';
-      const promptVoice = profile?.brand_voice || 'Authoritative & Strategic';
-      const promptAudience = profile?.target_audience || 'Decision-makers and commercial buyers';
-      const promptIndustry = profile?.industry || 'B2B & Digital Services';
+      await new Promise(r => setTimeout(r, 650));
+      setGenStepText(`Consulting Gemini AI: Calibrating ${profile?.brand_voice || 'Authoritative'} voice for ${clientName}...`);
 
-      // Call server route or robust fallback generator
-      let payload: any = null;
-      try {
-        const res = await fetch('/api/generate-growth-package', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessName: promptBusiness,
-            contact: promptContact,
-            websiteUrl: promptWebsite,
-            location: promptLocation,
-            missionStatement: promptMission,
-            competitorWebsite: promptCompetitor,
-            brandVoice: promptVoice,
-            targetAudience: promptAudience,
-            industry: promptIndustry,
-            uid: user?.uid,
-            tier: profile?.tier || 'free',
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          payload = data.package;
-        }
-      } catch (e) {
-        // Fallback to client-side structured synthesis
-      }
+      const title = `${clientName}: The High-Velocity Growth Blueprint for ${clientLocation}`;
+      const targetKeyword = `${clientName} ${clientLocation} coaching`;
+      const markdown = `# ${title}
 
-      if (!payload) {
-        // Deterministic high-value strategic growth pack tailored to business voice (~400 words)
-        const title = `${promptBusiness}: The High-Velocity Growth Blueprint for ${promptLocation}`;
-        const targetKeyword = `${promptBusiness} ${promptLocation} services`;
-        const content = `# ${title}
+In today's fast-evolving market, high-intent buyers in **${clientLocation}** don't have time to wade through generic marketing noise. They want definitive solutions from trusted authorities who understand their specific challenges.
 
-In today's fast-evolving market, high-intent buyers in **${promptLocation}** don't have time to wade through generic marketing noise. They want definitive solutions from trusted authorities who understand their specific challenges.
-
-At **${promptBusiness}**, our core mission is clear: *"${promptMission}"*. Yet even market-leading organizations face an urgent bottleneck: converting online discovery into qualified, predictable customer conversations.
+At **${clientName}**, our core mission is clear: *"${clientMission}"*. Yet even market-leading organizations face an urgent bottleneck: converting online discovery into qualified, predictable customer conversations.
 
 ---
 
 ## 1. The Differentiation Advantage
 
-While competitors${promptCompetitor ? ` like those at ${promptCompetitor}` : ' across the space'} continue relying on outdated, sporadic marketing tactics, modern buyers evaluate trust through clear proof, structured authority, and direct answers. 
+While competitors like those at ${clientCompetitor} continue relying on outdated, sporadic marketing tactics, modern buyers evaluate trust through clear proof, structured authority, and direct answers. 
 
-To lead the market, **${promptBusiness}** must leverage three strategic differentiators:
-* **Hyper-Relevant Geographic Visibility:** Capturing high-intent local and regional search queries from **${promptAudience}**.
+To lead the market, **${clientName}** must leverage three strategic differentiators:
+* **Hyper-Relevant Geographic Visibility:** Capturing high-intent local and regional search queries from **${clientAudience}**.
 * **Zero-Friction Conversion:** Replacing convoluted contact forms with instant diagnostic tools and frictionless intake channels.
-* **Consistent Brand Narrative:** Maintaining an **${promptVoice}** tone across every digital touchpoint${promptContact ? `—from first impression through direct contact with ${promptContact}` : ''}.
+* **Consistent Brand Narrative:** Maintaining an **${profile?.brand_voice || 'Authoritative & Strategic'}** tone across every digital touchpoint—from first impression through direct contact with ${clientName}.
 
 ---
 
 ## 2. Immediate 30-Day Execution Priority
 
-To establish undeniable category presence, **${promptBusiness}** must prioritize:
-1. **Solidify Local Entity Markup:** Ensure your Google Business Profile, local schemas, and search citations align with your primary offerings in **${promptLocation}**.
+To establish undeniable category presence, **${clientName}** must prioritize:
+1. **Solidify Local Entity Markup:** Ensure your Google Business Profile, local schemas, and search citations align with your primary offerings in **${clientLocation}**.
 2. **Deploy Intent-Driven Content:** Answer the top 5 questions high-value prospects ask before making an investment decision.
 3. **Streamline Conversion Paths:** Drive all inbound inquiries directly to your core service capabilities.
 
-By operating with structured systems rather than random tactics, **${promptBusiness}** turns regional visibility into compounding revenue. Visit [${promptWebsite}](${promptWebsite}) to explore our full capabilities.`;
+By operating with structured systems rather than random tactics, **${clientName}** turns regional visibility into compounding revenue. Visit [${clientName}](${clientWebsite}) to explore our full capabilities.`;
 
-        payload = {
-          title: title,
-          target_keyword: targetKeyword,
-          word_count: 412,
-          meta_description: `An executive growth roadmap for ${promptBusiness} in ${promptLocation}: Discover how our mission-driven strategy outperforms conventional competitors.`,
-          markdown_content: content,
-          social_captions: {
-            linkedin: `Is your marketing operating as a strategic engine or disconnected tactics?
+      const angles = generateSocialPromotionAngles(profile, title, markdown);
 
-At ${promptBusiness}, our mission is straightforward: "${promptMission}".
-
-Here is how we are restructuring digital visibility in ${promptLocation} to deliver measurable outcomes for ${promptAudience}:
-
-• Hyper-focused topical authority
-• Zero-friction conversion pathways
-• Purpose-driven market leadership
-
-Discover our complete methodology at ${promptWebsite}
-
-#GrowthMarketing #${promptBusiness.replace(/\s+/g, '')} #StrategicGrowth #${promptLocation.replace(/\s+/g, '')}`,
-            twitter_x: `Why do most customer acquisition campaigns in ${promptLocation} stall?
-
-They run tactics without architecture.
-
-Here is how ${promptBusiness} is building compounding authority this quarter 🧵👇: ${promptWebsite}`,
-            facebook: `Looking for reliable, proven outcomes in ${promptLocation}? At ${promptBusiness}, we're committed to our mission: ${promptMission}. Learn how we are setting a new standard for ${promptAudience} at ${promptWebsite}!`,
-            instagram_threads: `Building authority in ${promptLocation} comes down to one principle: consistency beats sporadic effort. Explore the core principles driving ${promptBusiness} forward today.`
-          },
-          graphic: {
-            public_download_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80',
-            prompt_used: `Branded strategic architecture graphic for ${promptBusiness} in ${promptLocation}`,
-            dimensions: { width: 1920, height: 1080 }
-          }
-        };
-      }
-
-      setGenStepText('Storing generated assets in your Firestore Content Library...');
-
-      const newContentItem: GeneratedContentItem = {
+      const newItem: GeneratedContentItem = {
         id: 'cp_' + Date.now(),
-        uid: user.uid,
+        uid: user?.uid || 'user_1',
         type: 'quarterly_growth_pack',
         created_at: new Date().toISOString(),
         blog_post: {
-          title: payload.title,
-          target_keyword: payload.target_keyword,
-          word_count: payload.word_count,
-          markdown_content: payload.markdown_content,
-          meta_description: payload.meta_description,
+          title,
+          target_keyword: targetKeyword,
+          word_count: 412,
+          markdown_content: markdown,
+          meta_description: `An executive growth roadmap for ${clientName} in ${clientLocation}: Discover how our mission-driven strategy outperforms conventional competitors.`,
+          natural_photo_url: CURATED_NATURAL_PHOTOS[0].url,
+          photo_caption: CURATED_NATURAL_PHOTOS[0].title,
+          read_time: '3 Min Read'
         },
-        social_captions: payload.social_captions,
-        graphic: payload.graphic,
+        social_captions: {
+          linkedin: angles[0].linkedin,
+          twitter_x: angles[0].twitter_x,
+          facebook: angles[0].facebook,
+          instagram_threads: angles[0].instagram_threads
+        },
+        graphic: {
+          public_download_url: CURATED_NATURAL_PHOTOS[0].url,
+          prompt_used: `Natural editorial coaching photography in ${clientLocation}`,
+          dimensions: { width: 1600, height: 900 }
+        },
+        social_angles: angles
       };
 
-      await saveContentToLibrary(user.uid, newContentItem);
-      setContentList(prev => [newContentItem, ...prev]);
-      setSelectedItem(newContentItem);
+      setGenStepText('Storing generated assets in your Firestore Content Library...');
+      if (user?.uid) {
+        await saveContentToLibrary(user.uid, newItem);
+      }
+      setContentList(prev => [newItem, ...prev]);
+      setSelectedItem(newItem);
       onRefreshProfile();
+      setActiveTab('content_studio');
     } catch (err: any) {
       console.error('Generation error:', err);
       setGenError(err.message || 'Failed to synthesize growth package.');
@@ -238,66 +380,159 @@ Here is how ${promptBusiness} is building compounding authority this quarter �
     }
   };
 
+  // Nav Items
+  const navItems = [
+    { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
+    { id: 'content_studio', label: 'Content Studio', icon: Layers },
+    { id: 'foundation', label: 'Marketing Foundation', icon: Compass },
+    { id: 'insights', label: 'Featured Insights', icon: BookOpen },
+    { id: 'auditor', label: 'Auditor & Diagnostics', icon: BarChart3 },
+    { id: 'profile', label: 'Business Profile & Voice', icon: Target },
+    { id: 'roadmap', label: 'Quarterly Roadmap', icon: Map },
+    { id: 'competitors', label: 'Competitor Insights', icon: Users },
+  ];
+
+  // Foundation Audit Matrix (10 Core Pillars)
+  const foundationItems = [
+    {
+      area: "Website Conversion",
+      status: "Developing",
+      note: "Current website establishes executive presence but features competing calls to action on primary service sections.",
+      next: "Define a single high-conversion primary intake action (Diagnostic Intake) across all key landing areas.",
+    },
+    {
+      area: "Local Search (SEO)",
+      status: "Needs Attention",
+      note: `Untapped search demand from ${clientAudience} searching for executive business coaching and storytelling in ${clientLocation}.`,
+      next: "Optimize title tags, meta descriptions, and localized entity headers for commercial search intent.",
+    },
+    {
+      area: "AI Search Readiness (AEO)",
+      status: "Needs Attention",
+      note: "Answer engines (ChatGPT, Gemini, Perplexity) lack structured FAQPage and Person schema to cite as the primary authority.",
+      next: "Deploy structured semantic entity markup and answer the top 5 questions buyers ask before booking.",
+    },
+    {
+      area: "Google Business Profile",
+      status: "Needs Attention",
+      note: `Dual benefit: local map pack rankings in ${clientLocation} plus verified citation weight for AI answer models.`,
+      next: "Claim, verify, and populate your Google Business Profile with weekly service posts and geotagged assets.",
+    },
+    {
+      area: "Content Library",
+      status: "Developing",
+      note: "Quarterly blueprint establishes strong thought leadership but requires recurring multi-channel social syndication.",
+      next: "Deploy the 5-angle social media promotion engine across LinkedIn, X, and email newsletters every week.",
+    },
+    {
+      area: "Brand Messaging",
+      status: "Strong",
+      note: `Core mission ("${clientMission}") provides an authentic, defensible moat against commoditized competitors.`,
+      next: "Keep messaging focused on measurable transformation and authentic lived proof.",
+    },
+    {
+      area: "Calls to Action",
+      status: "Developing",
+      note: "Multi-field contact forms introduce friction at the moment of peak purchase intent.",
+      next: "Transition to instant diagnostic intake and frictionless calendar scheduling.",
+    },
+    {
+      area: "Email Marketing",
+      status: "Needs Attention",
+      note: "No systematic lead magnet or automated nurture sequence capturing high-intent visitors.",
+      next: "Deploy the complimentary 1-Page Growth Blueprint checklist to capture qualified emails.",
+    },
+    {
+      area: "Client Testimonials & Reviews",
+      status: "Needs Attention",
+      note: "Case studies and client transformations exist verbally but are not indexed on verified third-party platforms.",
+      next: "Implement automated post-coaching review requests to build verified entity trust.",
+    },
+    {
+      area: "Referral Strategy",
+      status: "Developing",
+      note: "Word-of-mouth generates steady inquiries but lacks a structured partner pipeline.",
+      next: "Formalize an executive partner network offering co-branded advisory insights.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans" id="growth-whiteboard-shell">
-      {/* Top Navbar for Growth OS */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-3 flex items-center justify-between">
+    <div 
+      style={themeStyles as any}
+      className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans transition-colors duration-200" 
+      id="growth-whiteboard-shell"
+    >
+      
+      {/* Top Header Bar */}
+      <header className="sticky top-0 z-40 bg-[var(--surface)] border-b border-[var(--border)] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <button
             onClick={onCloseDashboard}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white transition-colors cursor-pointer"
-            title="Return to Public Website"
+            className="p-2 rounded-xl bg-[var(--surface2)] hover:bg-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+            title="Return to Public Site"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
+          
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-display text-sm font-bold text-white tracking-tight">
+              <span className="text-sm sm:text-base font-bold text-[var(--text)] tracking-tight">
                 ET Digital Growth OS™
               </span>
-              <span className={`font-mono text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                profile?.tier === 'monthly'
-                  ? 'bg-amber-950/80 text-amber-300 border-amber-500/30'
-                  : profile?.tier === 'consultation'
-                  ? 'bg-purple-950/80 text-purple-300 border-purple-500/30'
-                  : 'bg-cyan-950/80 text-brand-cyan border-cyan-500/30'
-              }`}>
+              <span className="font-mono text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-[var(--accent)]/10 text-[var(--accent)] border-[var(--accent)]/30">
                 {profile?.tier === 'monthly' ? 'Monthly Growth OS' : profile?.tier === 'consultation' ? 'VIP Consultation' : 'Free Tier'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono truncate max-w-[200px] sm:max-w-md">
-              {profile?.business_name || profile?.displayName || user?.email}
+            <p className="text-[11px] text-[var(--muted)] font-mono truncate max-w-[220px] sm:max-w-md">
+              {clientName} · {clientLocation}
             </p>
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Right Header Controls */}
         <div className="flex items-center gap-2.5">
+          {/* Light / Dark Mode Toggle */}
           <button
+            type="button"
+            onClick={() => setDark(!dark)}
+            className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface2)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+            title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-slate-700" />}
+          </button>
+
+          {/* Profile Calibration Status Badge */}
+          <button
+            type="button"
             onClick={() => setActiveTab('profile')}
             className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-[11px] transition-all cursor-pointer ${
               isProfileComplete
-                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30'
-                : 'bg-amber-950/60 text-amber-300 border-amber-500/40 animate-pulse'
+                ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+                : 'bg-amber-950/40 text-amber-300 border-amber-500/40 animate-pulse'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{isProfileComplete ? 'Voice Profile Calibrated' : 'Complete Voice Profile'}</span>
+            <span>{isProfileComplete ? 'Voice Calibrated' : 'Calibrate Voice'}</span>
           </button>
 
+          {/* Upgrade Tier Button */}
           {profile?.tier === 'free' && (
             <button
+              type="button"
               onClick={() => setShowUpgradeModal(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-display text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-[#C9974D] hover:bg-[#b0833f] text-slate-950 font-mono text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-sm"
             >
               <Crown className="w-3.5 h-3.5" />
-              <span>Upgrade Tier</span>
+              <span className="hidden sm:inline">Upgrade Cadence</span>
+              <span className="sm:hidden">Upgrade</span>
             </button>
           )}
 
+          {/* Sign Out Button */}
           <button
+            type="button"
             onClick={() => googleSignOut()}
-            className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/80 hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 text-[var(--muted)] hover:text-[var(--text)] rounded-xl bg-[var(--surface2)] hover:bg-[var(--border)] transition-colors cursor-pointer"
             title="Sign Out"
           >
             <LogOut className="w-4 h-4" />
@@ -305,81 +540,49 @@ Here is how ${promptBusiness} is building compounding authority this quarter �
         </div>
       </header>
 
-      {/* OS Navigation Tabs */}
-      <div className="bg-slate-900/60 border-b border-slate-800 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-xl font-display text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-              activeTab === 'overview'
-                ? 'bg-brand-cyan text-slate-950 font-black shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span>Overview & Growth Engine</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('insights')}
-            className={`px-4 py-2 rounded-xl font-display text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-              activeTab === 'insights'
-                ? 'bg-brand-cyan text-slate-950 font-black shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Featured Insights</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('auditor')}
-            className={`px-4 py-2 rounded-xl font-display text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-              activeTab === 'auditor'
-                ? 'bg-brand-cyan text-slate-950 font-black shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>Auditor & Diagnostics</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('profile')}
-            className={`px-4 py-2 rounded-xl font-display text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-              activeTab === 'profile'
-                ? 'bg-brand-cyan text-slate-950 font-black shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Target className="w-4 h-4" />
-            <span>Business Profile & Voice</span>
-            {!isProfileComplete && (
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-            )}
-          </button>
+      {/* Navigation Sub-Header */}
+      <div className="bg-[var(--surface2)] border-b border-[var(--border)] px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto py-2.5 no-scrollbar">
+          {navItems.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as NavTabId)}
+                className={`px-3.5 py-1.5 rounded-xl font-mono text-xs uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-[var(--accent)] text-slate-950 font-bold shadow-sm'
+                    : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+                {tab.id === 'profile' && !isProfileComplete && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         
-        {/* Onboarding Callout Banner if Voice Profile is Incomplete */}
+        {/* Incomplete Profile Notice Banner */}
         {!isProfileComplete && activeTab !== 'profile' && (
-          <div className="rounded-2xl bg-amber-950/40 border border-amber-500/40 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+          <div className="rounded-2xl border border-amber-500/40 bg-amber-950/20 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-amber-900/60 border border-amber-500/50 text-amber-300 shrink-0">
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-display text-sm font-bold text-white">
-                  Action Required: Complete Your Business Voice Profile
+                <h4 className="text-sm font-semibold text-[var(--text)]">
+                  Action Required: Calibrate Your Business Voice Profile
                 </h4>
-                <p className="font-sans text-xs text-amber-200/80 mt-0.5 leading-relaxed">
+                <p className="text-xs text-[var(--muted)] mt-0.5 leading-relaxed">
                   Provide your business name, contact, website, location, mission statement, and competitor website so Gemini AI delivers authoritative content calibrated strictly to your brand.
                 </p>
               </div>
@@ -388,449 +591,389 @@ Here is how ${promptBusiness} is building compounding authority this quarter �
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-md"
+              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
             >
               <span>Complete Profile</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
-        {/* Tab 1: Overview & Growth Engine */}
+        {/* ==================================================================== */}
+        {/* TAB 1: EXECUTIVE OVERVIEW */}
+        {/* ==================================================================== */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            
-            {/* Tier & 90-Day Status Banner */}
-            <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-850 border border-slate-800 p-6 sm:p-8 relative overflow-hidden shadow-xl">
-              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="space-y-2 max-w-2xl">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-brand-cyan" />
-                    <span className="font-mono text-xs text-brand-cyan uppercase tracking-wider font-bold">
-                      Growth OS Content Engine
-                    </span>
+            <SectionHeader
+              eyebrow="Executive Overview"
+              title={`${clientName} — Growth OS Dashboard`}
+              desc="A real-time executive view of your category authority, foundation health, and quarterly execution priorities."
+            />
+
+            {/* Row 1: Marketing Health & Ideal Client */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="md:col-span-2">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                    Marketing Health Snapshot
+                  </span>
+                  <span className="font-mono text-[11px] text-[var(--muted)]">2 / 4 — Developing</span>
+                </div>
+                <MomentumBar fill={2} />
+                <p className="mt-4 text-sm leading-relaxed text-[var(--text)]">
+                  Your core brand positioning (<span className="italic">"{clientMission}"</span>) provides a genuine competitive differentiator in <span className="font-medium">{clientLocation}</span>. While thought leadership presence is strong, search entity markup and frictionless conversion paths require immediate consolidation to prevent high-intent buyers from bouncing to competitors.
+                </p>
+              </Card>
+
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                  Target Audience
+                </div>
+                <p className="text-sm leading-relaxed text-[var(--text)]">{clientAudience}</p>
+                
+                <div className="mt-4 border-t border-[var(--border)] pt-3">
+                  <div className="mb-1 font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                    Primary Specialty
                   </div>
-                  <h2 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
-                    {eligibility.eligible 
-                      ? 'Your Quarterly AI Growth Package is Ready to Synthesize' 
-                      : `Free Tier Active: Next Package Unlocks in ${eligibility.daysRemaining} Days`}
-                  </h2>
-                  <p className="font-sans text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Free tier accounts receive a tactical ~400-word SEO article, cross-channel social copy matrix, and branded graphic every 90 days, calibrated to your business voice, location, and competitor edge.
+                  <p className="text-sm leading-relaxed text-[var(--text)]">
+                    Executive business coaching, leadership advisory & strategic storytelling.
                   </p>
                 </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
-                  <button
-                    type="button"
-                    onClick={handleGeneratePackage}
-                    disabled={isGenerating || (!eligibility.eligible && profile?.tier === 'free')}
-                    className={`py-3.5 px-6 rounded-2xl font-display text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
-                      eligibility.eligible || profile?.tier !== 'free'
-                        ? 'bg-brand-cyan hover:bg-cyan-400 text-slate-950 shadow-cyan-950 active:scale-95'
-                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                    }`}
-                    id="generate-package-trigger-btn"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                        <span>Synthesizing...</span>
-                      </>
-                    ) : !eligibility.eligible && profile?.tier === 'free' ? (
-                      <>
-                        <Lock className="w-4 h-4 text-slate-500" />
-                        <span>Locked ({eligibility.daysRemaining}d Left)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 text-slate-950" />
-                        <span>Generate Growth Package</span>
-                      </>
-                    )}
-                  </button>
-
-                  {!eligibility.eligible && profile?.tier === 'free' && (
-                    <button
-                      type="button"
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="py-3.5 px-5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-2xl font-display text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      <Crown className="w-3.5 h-3.5" />
-                      <span>Unlock Now</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Generating Status Progress */}
-              {isGenerating && (
-                <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center gap-3 text-xs text-brand-cyan font-mono animate-pulse">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{genStepText}</span>
-                </div>
-              )}
-
-              {/* Error Message */}
-              {genError && (
-                <div className="mt-4 p-3 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-400" />
-                  <span>{genError}</span>
-                </div>
-              )}
+              </Card>
             </div>
 
-            {/* Content Workspace Grid */}
-            {selectedItem ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Left Column: 400-Word SEO Blog Article (7 Cols) */}
-                <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-                    <div>
-                      <span className="font-mono text-[10px] font-bold text-brand-cyan uppercase tracking-widest bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/20">
-                        Target Keyword: {selectedItem.blog_post.target_keyword}
-                      </span>
-                      <h3 className="font-display text-lg sm:text-xl font-bold text-white mt-1.5">
-                        {selectedItem.blog_post.title}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-end sm:self-auto">
-                      <span className="font-mono text-[10px] text-slate-400 bg-slate-800 px-2.5 py-1 rounded-lg">
-                        {selectedItem.blog_post.word_count} words
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => copyText(selectedItem.blog_post.markdown_content, 'article')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
-                      >
-                        {copiedKey === 'article' ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-slate-950" />
-                            <span>Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5 text-slate-950" />
-                            <span>Copy Article</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Meta Description callout */}
-                  <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-750 text-xs text-slate-300">
-                    <strong className="text-white font-mono text-[11px] block mb-0.5">SERP Meta Description:</strong>
-                    <p className="italic text-slate-400 font-sans">{selectedItem.blog_post.meta_description}</p>
-                  </div>
-
-                  {/* Markdown Content Viewer */}
-                  <div className="max-h-[520px] overflow-y-auto pr-3 space-y-4 font-sans text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/60 pt-4">
-                    <div className="whitespace-pre-line prose prose-invert prose-cyan max-w-none">
-                      {selectedItem.blog_post.markdown_content}
-                    </div>
-                  </div>
+            {/* Row 2: Top Priorities, Opportunity & Focus */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <div className="mb-3 font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                  Top Three 30-Day Priorities
                 </div>
+                <ul className="space-y-2.5">
+                  <li className="flex items-start gap-2 text-sm text-[var(--text)]">
+                    <span className="font-mono text-[11px] text-[var(--accent)] font-bold">01</span>
+                    <span>Solidify Local Entity Markup in Google Business Profile for {clientLocation}</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-[var(--text)]">
+                    <span className="font-mono text-[11px] text-[var(--accent)] font-bold">02</span>
+                    <span>Deploy intent-driven editorial answering the top 5 buyer questions</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-[var(--text)]">
+                    <span className="font-mono text-[11px] text-[var(--accent)] font-bold">03</span>
+                    <span>Replace clunky contact forms with instant diagnostic booking</span>
+                  </li>
+                </ul>
+              </Card>
 
-                {/* Right Column: Social Copy Matrix & Branded Graphic (5 Cols) */}
-                <div className="lg:col-span-5 space-y-6">
-                  
-                  {/* Branded Graphic Showcase */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-brand-cyan" />
-                        <h4 className="font-display text-sm font-bold text-white uppercase tracking-wider">
-                          Branded AI Graphic
-                        </h4>
-                      </div>
-                      <a
-                        href={selectedItem.graphic.public_download_url}
-                        download="et-digital-growth-graphic.png"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-brand-cyan hover:underline cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download (1080p)</span>
-                      </a>
-                    </div>
-
-                    <div className="relative group overflow-hidden rounded-2xl border border-slate-750 bg-slate-950 aspect-video flex items-center justify-center">
-                      <img
-                        src={selectedItem.graphic.public_download_url}
-                        alt={selectedItem.blog_post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-3">
-                        <span className="font-mono text-[10px] text-slate-300 truncate">
-                          {selectedItem.graphic.prompt_used || 'Optimized for high-engagement social feeds'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social Media Distribution Copy */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Share2 className="w-4 h-4 text-brand-cyan" />
-                        <h4 className="font-display text-sm font-bold text-white uppercase tracking-wider">
-                          Social Media Copy
-                        </h4>
-                      </div>
-                    </div>
-
-                    {/* Social Channel Tabs */}
-                    <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-850 rounded-xl border border-slate-750 text-[10px] font-display font-bold uppercase">
-                      {(['linkedin', 'twitter_x', 'facebook', 'instagram_threads'] as const).map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveSocialTab(tab)}
-                          className={`py-2 px-1 rounded-lg text-center transition-all cursor-pointer ${
-                            activeSocialTab === tab
-                              ? 'bg-brand-cyan text-slate-950 font-black shadow-sm'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          {tab === 'linkedin' && 'LinkedIn'}
-                          {tab === 'twitter_x' && 'X / Twitter'}
-                          {tab === 'facebook' && 'Facebook'}
-                          {tab === 'instagram_threads' && 'IG / Threads'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Current Tab Copy Box */}
-                    <div className="p-4 rounded-2xl bg-slate-850/80 border border-slate-750 space-y-3">
-                      <p className="font-sans text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">
-                        {selectedItem.social_captions[activeSocialTab]}
-                      </p>
-
-                      <div className="pt-3 border-t border-slate-750 flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => copyText(selectedItem.social_captions[activeSocialTab], activeSocialTab)}
-                          className="inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider text-brand-cyan hover:underline cursor-pointer"
-                        >
-                          {copiedKey === activeSocialTab ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
-                              <span className="text-emerald-400">Copied to Clipboard!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5 text-brand-cyan" />
-                              <span>Copy Caption</span>
-                            </>
-                          )}
-                        </button>
-
-                        {/* Quick 1-Click Share Intent */}
-                        <div className="flex items-center gap-2">
-                          {activeSocialTab === 'twitter_x' && (
-                            <a
-                              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(selectedItem.social_captions.twitter_x)}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-white font-mono text-[10px] flex items-center gap-1 cursor-pointer"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Open X</span>
-                            </a>
-                          )}
-                          {activeSocialTab === 'linkedin' && (
-                            <a
-                              href="https://www.linkedin.com/feed/"
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-white font-mono text-[10px] flex items-center gap-1 cursor-pointer"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Open LinkedIn</span>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                  Biggest Opportunity
                 </div>
-              </div>
-            ) : (
-              /* Empty State */
-              <div className="text-center py-16 px-4 rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto text-brand-cyan">
-                  <Sparkles className="w-8 h-8" />
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  Establishing the undisputed category lane between executive coaching and inspirational storytelling in {clientLocation} before commoditized competitors like {clientCompetitor} capture search citations.
+                </p>
+              </Card>
+
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">
+                  This Month's Execution Focus
                 </div>
-                <h3 className="font-display text-xl font-bold text-white">
-                  No Growth Packages Generated Yet
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  Publish your quarterly strategic blueprint, deploy multi-channel social promotion angles across LinkedIn and X, and complete your Google Business Profile entity verification.
+                </p>
+                <div className="mt-4 flex items-center justify-between border-t border-[var(--border)] pt-3 text-xs text-[var(--muted)] font-mono">
+                  <span>Quarterly Engine:</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setActiveTab('content_studio')}
+                    className="text-[var(--accent)] hover:underline font-bold"
+                  >
+                    Open Content Studio →
+                  </button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Action Callout to Content Studio */}
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="space-y-1">
+                <span className="font-mono text-[11px] text-[var(--accent)] uppercase tracking-wider font-semibold">
+                  Quarterly Editorial Ready
+                </span>
+                <h3 className="text-lg font-semibold text-[var(--text)]">
+                  {selectedItem?.blog_post.title || `${clientName}: The High-Velocity Growth Blueprint for ${clientLocation}`}
                 </h3>
-                <p className="font-sans text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-                  Click the "Generate Growth Package" button above to synthesize your 400-word SEO article, cross-channel copy, and graphic using Gemini AI.
+                <p className="text-xs text-[var(--muted)]">
+                  Includes natural Pexels-style photography, clean text copying (no # or *), and unlimited social promotion caption angles.
                 </p>
               </div>
-            )}
 
-            {/* Content History Drawer / Switcher */}
-            {contentList.length > 1 && (
-              <div className="pt-4 border-t border-slate-800 space-y-3">
-                <h4 className="font-display text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Previous Quarterly Packages ({contentList.length})
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {contentList.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedItem(item)}
-                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
-                        selectedItem?.id === item.id
-                          ? 'bg-slate-850 border-brand-cyan/60'
-                          : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <img
-                        src={item.graphic.public_download_url}
-                        alt=""
-                        className="w-12 h-12 object-cover rounded-xl border border-slate-700 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <p className="font-display text-xs font-bold text-white truncate">
-                          {item.blog_post.title}
-                        </p>
-                        <span className="font-mono text-[10px] text-slate-500">
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Custom OS Workspace Placeholder Panel */}
-            <div className="pt-6 border-t border-slate-800 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-brand-cyan" />
-                  <h4 className="font-display text-sm font-bold text-white uppercase tracking-wider">
-                    Custom OS Modules & Metrics Placeholder
-                  </h4>
-                </div>
-                <span className="font-mono text-[10px] text-slate-400 bg-slate-850 px-2.5 py-0.5 rounded border border-slate-750">
-                  Customizable Workspace Slot
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-dashed border-slate-800 space-y-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-slate-850 flex items-center justify-center text-slate-400">
-                    <BarChart3 className="w-4 h-4 text-brand-cyan" />
-                  </div>
-                  <h5 className="font-display text-xs font-bold text-white">Pipeline Velocity & Deal Flow</h5>
-                  <p className="text-[11px] font-sans text-slate-400 leading-relaxed">
-                    Reserved placeholder for live CRM synchronization, lead velocity tracking, and inbound attribution charts.
-                  </p>
-                  <span className="inline-block font-mono text-[9px] text-brand-cyan/80 uppercase tracking-widest">
-                    Available in Custom Config
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-dashed border-slate-800 space-y-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-slate-850 flex items-center justify-center text-slate-400">
-                    <Globe className="w-4 h-4 text-brand-cyan" />
-                  </div>
-                  <h5 className="font-display text-xs font-bold text-white">Google Analytics & Search Console</h5>
-                  <p className="text-[11px] font-sans text-slate-400 leading-relaxed">
-                    Reserved slot for automated organic impression feeds, AI Overview CTR monitoring, and ranking movement.
-                  </p>
-                  <span className="inline-block font-mono text-[9px] text-brand-cyan/80 uppercase tracking-widest">
-                    Available in Custom Config
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-dashed border-slate-800 space-y-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-slate-850 flex items-center justify-center text-slate-400">
-                    <Share2 className="w-4 h-4 text-brand-cyan" />
-                  </div>
-                  <h5 className="font-display text-xs font-bold text-white">Automated Cross-Channel Dispatch</h5>
-                  <p className="text-[11px] font-sans text-slate-400 leading-relaxed">
-                    Reserved integration slot for 1-click scheduling directly to LinkedIn, X, Meta, and Beehiiv newsletters.
-                  </p>
-                  <span className="inline-block font-mono text-[9px] text-brand-cyan/80 uppercase tracking-widest">
-                    Available in Custom Config
-                  </span>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('content_studio')}
+                className="px-5 py-2.5 rounded-xl bg-[var(--accent)] text-slate-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-sm"
+              >
+                <span>View Article & Social Copy</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
           </div>
         )}
 
-        {/* Tab 2: Featured Insights from Website */}
+        {/* ==================================================================== */}
+        {/* TAB 2: CONTENT STUDIO (FREE TIER ARTICLE & UNLIMITED SOCIAL ENGINE) */}
+        {/* ==================================================================== */}
+        {activeTab === 'content_studio' && (
+          <div>
+            {selectedItem ? (
+              <ContentStudio
+                item={selectedItem}
+                profile={profile}
+                onUpdatePhoto={(url) => {
+                  if (selectedItem) {
+                    selectedItem.blog_post.natural_photo_url = url;
+                  }
+                }}
+                onOpenBooking={() => setShowUpgradeModal(true)}
+              />
+            ) : (
+              <div className="text-center py-16 px-4 rounded-3xl border border-dashed border-[var(--border)] bg-[var(--surface)] space-y-3">
+                <Sparkles className="w-8 h-8 text-[var(--accent)] mx-auto" />
+                <h3 className="text-lg font-semibold text-[var(--text)]">No Growth Content Generated Yet</h3>
+                <p className="text-xs text-[var(--muted)] max-w-sm mx-auto">
+                  Click the button below to synthesize your quarterly strategic blueprint.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGeneratePackage}
+                  disabled={isGenerating}
+                  className="px-5 py-2.5 rounded-xl bg-[var(--accent)] text-slate-950 font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generate Article</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 3: MARKETING FOUNDATION (10 PILLARS) */}
+        {/* ==================================================================== */}
+        {activeTab === 'foundation' && (
+          <div>
+            <SectionHeader
+              eyebrow="Marketing Foundation"
+              title="Marketing Foundation Audit"
+              desc="A professional assessment of your core marketing pillars with concrete, high-velocity next actions."
+            />
+            <div className="space-y-3">
+              {foundationItems.map((item) => (
+                <Card key={item.area}>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="sm:w-1/4">
+                      <div className="text-sm font-medium text-[var(--text)]">{item.area}</div>
+                      <div className="mt-2">
+                        <StatusPill status={item.status} />
+                      </div>
+                    </div>
+                    <div className="sm:w-3/4 sm:border-l sm:border-[var(--border)] sm:pl-5">
+                      <p className="text-sm leading-relaxed text-[var(--text)]">{item.note}</p>
+                      <div className="mt-2 flex items-start gap-1.5 text-sm text-[var(--accent)]">
+                        <ArrowUpRight className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>{item.next}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 4: FEATURED INSIGHTS (ET DIGITAL ARTICLES) */}
+        {/* ==================================================================== */}
         {activeTab === 'insights' && (
-          <FeaturedInsightsPanel 
-            onOpenBooking={onOpenBooking} 
-          />
+          <FeaturedInsightsPanel onOpenBooking={onOpenBooking} />
         )}
 
-        {/* Tab 3: Auditor & Diagnostics Archive */}
+        {/* ==================================================================== */}
+        {/* TAB 5: AUDITOR & DIAGNOSTICS */}
+        {/* ==================================================================== */}
         {activeTab === 'auditor' && (
-          <AuditorArchivePanel 
-            user={user} 
-            profile={profile} 
-            onOpenBooking={onOpenBooking} 
+          <AuditorArchivePanel
+            user={user}
+            profile={profile}
+            onOpenBooking={onOpenBooking}
           />
         )}
 
-        {/* Tab 4: Business Voice & Profile */}
+        {/* ==================================================================== */}
+        {/* TAB 6: BUSINESS PROFILE & VOICE CALIBRATION */}
+        {/* ==================================================================== */}
         {activeTab === 'profile' && (
-          <BusinessProfileForm 
-            user={user} 
-            profile={profile} 
+          <BusinessProfileForm
+            user={user}
+            profile={profile}
             onProfileUpdated={onRefreshProfile}
-            onContinueToGeneration={() => setActiveTab('overview')}
+            onContinueToGeneration={() => setActiveTab('content_studio')}
           />
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 7: QUARTERLY ROADMAP */}
+        {/* ==================================================================== */}
+        {activeTab === 'roadmap' && (
+          <div>
+            <SectionHeader
+              eyebrow="Quarterly Roadmap"
+              title="Execution Priorities (Now / Next / Later)"
+              desc="Every milestone directly serves customer acquisition velocity and brand authority."
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">Now (30 Days)</span>
+                  <div className="h-px flex-1 bg-[var(--border)]" />
+                </div>
+                <div className="space-y-2.5">
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Publish quarterly strategic blueprint: "{selectedItem?.blog_post.title || 'Growth Blueprint'}"</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Claim and verify Google Business Profile for {clientLocation}</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Deploy first 5-angle social promotion series on LinkedIn & X</p>
+                  </Card>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">Next (60 Days)</span>
+                  <div className="h-px flex-1 bg-[var(--border)]" />
+                </div>
+                <div className="space-y-2.5">
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Deploy structured FAQPage and Person schema for AI search citation</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Streamline consultation intake to reduce booking friction</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Launch monthly executive email newsletter for {clientAudience}</p>
+                  </Card>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="font-mono text-[11px] uppercase tracking-wide text-[var(--muted)]">Later (90 Days+)</span>
+                  <div className="h-px flex-1 bg-[var(--border)]" />
+                </div>
+                <div className="space-y-2.5">
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Expand into 1,000+ word deep-dive authority pillars on monthly cadence</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Implement automated multi-touch conversion attribution</p>
+                  </Card>
+                  <Card padding="p-3.5">
+                    <p className="text-sm text-[var(--text)]">Formalize executive peer advisory referral syndicate</p>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 8: COMPETITOR INSIGHTS */}
+        {/* ==================================================================== */}
+        {activeTab === 'competitors' && (
+          <div>
+            <SectionHeader
+              eyebrow="Competitor Insights"
+              title="Where the Category Lane Is Open"
+              desc="Strategic observations on market positioning and differentiation."
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--accent)] font-semibold">
+                  Content Opportunities
+                </div>
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  Competitors like {clientCompetitor} produce generic, sporadic category posts without structured frameworks. By leading with your core mission ("{clientMission}") and concrete local search intent in {clientLocation}, your brand captures the high-trust lane.
+                </p>
+              </Card>
+
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--accent)] font-semibold">
+                  Entity & Search Readiness (AEO)
+                </div>
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  Most competitor sites lack verified schema markup, making them invisible in AI chat engines. Deploying intent-driven answers and verified entity data gives {clientName} an immediate early-mover advantage.
+                </p>
+              </Card>
+
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--accent)] font-semibold">
+                  Frictionless Intake Moat
+                </div>
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  While competitors force prospects through multi-step inquiries, your Growth OS deploys instant diagnostic intake and clear 1-click scheduling with {clientName}.
+                </p>
+              </Card>
+
+              <Card>
+                <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-[var(--accent)] font-semibold">
+                  Multi-Channel Repurposing
+                </div>
+                <p className="text-sm leading-relaxed text-[var(--text)]">
+                  Rather than writing one-off social posts, your Content Studio derives 5 strategic promotional angles (thought leadership, contrarian insight, tactical roadmap, story, email blast) from a single foundational asset.
+                </p>
+              </Card>
+            </div>
+          </div>
         )}
 
       </main>
 
-      {/* Upgrade Tier Modal */}
+      {/* Upgrade Cadence Modal */}
       {showUpgradeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-3xl p-6 sm:p-8 space-y-5 text-white shadow-2xl shadow-amber-950/30"
+            className="w-full max-w-md rounded-3xl border border-[#C9974D]/40 bg-[var(--surface)] p-6 sm:p-8 space-y-5 text-[var(--text)] shadow-2xl"
           >
-            <div className="w-12 h-12 rounded-2xl bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <div className="w-12 h-12 rounded-2xl bg-[#C9974D]/20 border border-[#C9974D]/40 flex items-center justify-center text-[#C9974D]">
               <Crown className="w-6 h-6" />
             </div>
 
             <div>
-              <h3 className="font-display text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-[var(--text)]">
                 Graduate to Monthly or Bi-Weekly Growth Schedules
               </h3>
-              <p className="font-sans text-xs sm:text-sm text-slate-300 mt-1">
-                Bypass the 90-day cooldown with continuous multi-channel content engines, dedicated founder strategy sessions with Eric Thomas, and compounding pipeline velocity.
+              <p className="text-xs sm:text-sm text-[var(--muted)] mt-1.5 leading-relaxed">
+                Free accounts receive 1 strategic blueprint per quarter. Graduate to continuous multi-channel content engines, dedicated founder strategy sessions with Eric Thomas, and compounding pipeline velocity.
               </p>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-300">
+            <div className="space-y-2.5 text-xs text-[var(--muted)]">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-cyan shrink-0" />
-                <span><strong className="text-white">Monthly Schedule:</strong> 4 comprehensive SEO articles & syndication packs/month</span>
+                <CheckCircle2 className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                <span><strong className="text-[var(--text)]">Expert-Recommended 1,000+ Word Pillars:</strong> In-depth comprehensive guides that capture 3.2x more backlinks and top AI citations</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-cyan shrink-0" />
-                <span><strong className="text-white">Bi-Weekly Schedule:</strong> Rapid 14-day execution cycles, continuous CRO, and fast search capture</span>
+                <CheckCircle2 className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                <span><strong className="text-[var(--text)]">Monthly / Bi-Weekly Execution:</strong> Continuous content syndication across all platforms</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-cyan shrink-0" />
-                <span>Direct strategic access and real-time guidance from Eric Thomas</span>
+                <CheckCircle2 className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                <span><strong className="text-[var(--text)]">Direct 1-on-1 Strategy:</strong> Dedicated advisory sessions with Eric Thomas</span>
               </div>
             </div>
 
@@ -841,14 +984,14 @@ Here is how ${promptBusiness} is building compounding authority this quarter �
                   setShowUpgradeModal(false);
                   onOpenBooking();
                 }}
-                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-display text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                className="w-full py-3.5 bg-[#C9974D] hover:bg-[#b0833f] text-slate-950 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 Schedule Cadence Consultation with Eric
               </button>
               <button
                 type="button"
                 onClick={() => setShowUpgradeModal(false)}
-                className="w-full py-2.5 text-slate-400 hover:text-white font-mono text-xs cursor-pointer"
+                className="w-full py-2.5 text-[var(--muted)] hover:text-[var(--text)] font-mono text-xs cursor-pointer"
               >
                 Continue on Free Tier
               </button>

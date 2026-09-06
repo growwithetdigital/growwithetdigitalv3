@@ -47,19 +47,26 @@ if (typeof window !== 'undefined') {
 }
 
 // Google Auth Provider setup with Workspace scopes
-export const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/drive');
-provider.addScope('https://www.googleapis.com/auth/drive.file');
-provider.addScope('https://www.googleapis.com/auth/forms.body');
-provider.addScope('https://www.googleapis.com/auth/forms.responses.readonly');
-provider.addScope('https://www.googleapis.com/auth/spreadsheets');
-provider.addScope('https://mail.google.com/');
-provider.addScope('https://www.googleapis.com/auth/gmail.send');
-provider.addScope('https://www.googleapis.com/auth/calendar');
-provider.addScope('https://www.googleapis.com/auth/meetings.space.created');
-provider.addScope('https://www.googleapis.com/auth/classroom.courses');
-provider.addScope('https://www.googleapis.com/auth/classroom.announcements');
-provider.addScope('https://www.googleapis.com/auth/classroom.rosters');
+export const workspaceProvider = new GoogleAuthProvider();
+workspaceProvider.addScope('https://www.googleapis.com/auth/drive');
+workspaceProvider.addScope('https://www.googleapis.com/auth/drive.file');
+workspaceProvider.addScope('https://www.googleapis.com/auth/forms.body');
+workspaceProvider.addScope('https://www.googleapis.com/auth/forms.responses.readonly');
+workspaceProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+workspaceProvider.addScope('https://mail.google.com/');
+workspaceProvider.addScope('https://www.googleapis.com/auth/gmail.send');
+workspaceProvider.addScope('https://www.googleapis.com/auth/calendar');
+workspaceProvider.addScope('https://www.googleapis.com/auth/meetings.space.created');
+workspaceProvider.addScope('https://www.googleapis.com/auth/classroom.courses');
+workspaceProvider.addScope('https://www.googleapis.com/auth/classroom.announcements');
+workspaceProvider.addScope('https://www.googleapis.com/auth/classroom.rosters');
+
+// Standard Google provider for Growth OS sign-in (email & profile only)
+export const standardGoogleProvider = new GoogleAuthProvider();
+standardGoogleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Backward compatibility export
+export const provider = workspaceProvider;
 
 // In-memory token caching (MANDATORY: do not use localStorage for credentials)
 let cachedAccessToken: string | null = null;
@@ -72,13 +79,7 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
-      if (cachedAccessToken) {
-        if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
-      } else if (!isSigningIn) {
-        // Clear cached token if not signing in explicitly
-        cachedAccessToken = null;
-        if (onAuthFailure) onAuthFailure();
-      }
+      if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken || '');
     } else {
       cachedAccessToken = null;
       if (onAuthFailure) onAuthFailure();
@@ -86,19 +87,17 @@ export const initAuth = (
   });
 };
 
-// 2. Google sign in with popup
-export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
+// 2. Google sign in with popup (supports standard login and workspace integration)
+export const googleSignIn = async (includeWorkspaceScopes = false): Promise<{ user: User; accessToken: string } | null> => {
   try {
     isSigningIn = true;
-    const result = await signInWithPopup(auth, provider);
+    const authProvider = includeWorkspaceScopes ? workspaceProvider : standardGoogleProvider;
+    const result = await signInWithPopup(auth, authProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('Failed to retrieve Google Workspace access token from Firebase login.');
-    }
-    cachedAccessToken = credential.accessToken;
+    cachedAccessToken = credential?.accessToken || '';
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error) {
-    console.error('Workspace login failed:', error);
+    console.error('Google login failed:', error);
     throw error;
   } finally {
     isSigningIn = false;

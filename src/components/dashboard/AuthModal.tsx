@@ -32,8 +32,13 @@ export default function AuthModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isProviderDisabled, setIsProviderDisabled] = useState(false);
+  const [showConsoleGuide, setShowConsoleGuide] = useState(false);
 
   if (!isOpen) return null;
+
+  // Check if user entered a Google account email
+  const isGoogleEmail = email.trim().toLowerCase().endsWith('@gmail.com') || email.trim().toLowerCase().endsWith('@googlemail.com');
 
   // Check if there is an unattached audit in session
   const hasPendingAudit = typeof window !== 'undefined' && Boolean(localStorage.getItem('et_pending_audit'));
@@ -42,6 +47,7 @@ export default function AuthModal({
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+    setIsProviderDisabled(false);
     setIsLoading(true);
 
     try {
@@ -70,12 +76,15 @@ export default function AuthModal({
     } catch (err: any) {
       console.error('Auth error:', err);
       let msg = err.message || 'Authentication failed. Please check your credentials.';
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.code === 'auth/operation-not-allowed' || String(err.message).includes('operation-not-allowed')) {
+        setIsProviderDisabled(true);
+        msg = 'Email/Password sign-in is disabled in your Firebase console. Please click "Continue with Google" below for instant 1-click access, or enable the Email/Password provider in the Firebase Console.';
+      } else if (err.code === 'auth/email-already-in-use') {
         msg = 'An account already exists for this email address. Please sign in or use password reset.';
       } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         msg = 'Invalid email or password. Please verify your credentials.';
       } else if (err.code === 'auth/user-not-found') {
-        msg = 'No account found with this email. Please sign up for free.';
+        msg = 'No account found with this email. Please sign up for free or use Google sign-in.';
       }
       setError(msg);
     } finally {
@@ -85,6 +94,7 @@ export default function AuthModal({
 
   const handleGoogleAuth = async () => {
     setError(null);
+    setIsProviderDisabled(false);
     setIsLoading(true);
     try {
       const user = await googleSignInWithProfile();
@@ -92,7 +102,11 @@ export default function AuthModal({
       onClose();
     } catch (err: any) {
       console.error('Google auth error:', err);
-      setError(err.message || 'Google sign-in could not be completed.');
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in popup was closed before completion. Please try again.');
+      } else {
+        setError(err.message || 'Google sign-in could not be completed.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -150,13 +164,59 @@ export default function AuthModal({
           </div>
         )}
 
-        {/* Error Alert */}
-        {error && (
+        {/* Error Alert / Provider Disabled Diagnostic */}
+        {error && isProviderDisabled ? (
+          <div className="mb-5 p-4 rounded-2xl bg-amber-950/50 border border-amber-500/40 text-left space-y-3">
+            <div className="flex items-start gap-2.5">
+              <KeyRound className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-display text-xs font-bold uppercase tracking-wider text-amber-300">
+                  Firebase Notice: Email/Password Is Not Enabled
+                </h4>
+                <p className="font-sans text-xs text-amber-200/80 mt-1 leading-relaxed">
+                  By default, Firebase requires Email/Password sign-in to be switched ON in the Firebase console. Because your account is a Google address (<span className="text-white font-mono font-semibold">{email || 'ericlamarthomas@gmail.com'}</span>), you can sign in right now with Google in 1 click!
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleAuth}
+              disabled={isLoading}
+              className="w-full py-3 px-4 bg-white hover:bg-slate-100 text-slate-900 rounded-xl font-display text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-md cursor-pointer transition-all active:scale-98"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5z"/>
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.4s.2-1.7.4-2.4L1.6 7c-.8 1.6-1.3 3.4-1.3 5.3s.5 3.7 1.3 5.3l3.7-2.9z"/>
+                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.1L1.6 16.1C3.5 19.9 7.4 23 12 23z"/>
+              </svg>
+              <span>Sign In with Google (Recommended)</span>
+            </button>
+
+            <div className="pt-2 border-t border-amber-800/40">
+              <button
+                type="button"
+                onClick={() => setShowConsoleGuide(!showConsoleGuide)}
+                className="text-[11px] text-amber-400 hover:text-amber-300 font-mono underline cursor-pointer"
+              >
+                {showConsoleGuide ? 'Hide instructions' : 'How to enable Email/Password in Firebase Console?'}
+              </button>
+              {showConsoleGuide && (
+                <ol className="mt-2 text-[11px] text-amber-200/70 space-y-1 list-decimal list-inside font-mono bg-amber-950/60 p-2.5 rounded-lg border border-amber-800/30">
+                  <li>Go to your Firebase Console &gt; Authentication &gt; Sign-in method</li>
+                  <li>Click "Email/Password" under Native providers</li>
+                  <li>Turn on "Enable" and click Save</li>
+                </ol>
+              )}
+            </div>
+          </div>
+        ) : error ? (
           <div className="mb-4 p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300 flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
-        )}
+        ) : null}
 
         {/* Success Alert */}
         {successMsg && (
@@ -166,14 +226,14 @@ export default function AuthModal({
           </div>
         )}
 
-        {/* Google Sign In (Only for signin / signup) */}
+        {/* Google Sign In (Primary / 1-Click for signin & signup) */}
         {mode !== 'forgot' && (
-          <div className="space-y-3">
+          <div className="space-y-3 mb-5">
             <button
               type="button"
               onClick={handleGoogleAuth}
               disabled={isLoading}
-              className="w-full py-3.5 px-4 bg-slate-800 hover:bg-slate-750 active:scale-98 border border-slate-700 hover:border-slate-600 rounded-xl font-display text-xs font-bold uppercase tracking-wider text-slate-200 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+              className="w-full py-3.5 px-4 bg-white hover:bg-slate-100 active:scale-98 border border-slate-200 rounded-xl font-display text-xs font-black uppercase tracking-wider text-slate-900 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-md hover:shadow-lg"
               id="google-auth-btn"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -183,12 +243,15 @@ export default function AuthModal({
                 <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.1L1.6 16.1C3.5 19.9 7.4 23 12 23z"/>
               </svg>
               <span>Continue with Google</span>
+              <span className="font-mono text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-tight ml-auto">
+                1-Click
+              </span>
             </button>
 
-            <div className="relative flex py-2 items-center">
+            <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
               <span className="flex-shrink mx-3 font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                or with email
+                or sign in with password
               </span>
               <div className="flex-grow border-t border-slate-800"></div>
             </div>
@@ -231,6 +294,21 @@ export default function AuthModal({
                 className="w-full bg-slate-850 border border-slate-750 focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan rounded-xl py-3 pl-10 pr-4 text-xs text-white placeholder-slate-500 outline-none transition-all"
               />
             </div>
+            {isGoogleEmail && mode !== 'forgot' && (
+              <div className="mt-2 p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-between text-[11px] text-cyan-300">
+                <span className="flex items-center gap-1.5 truncate">
+                  <Sparkles className="w-3.5 h-3.5 text-brand-cyan shrink-0" />
+                  Google account detected.
+                </span>
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  className="font-bold underline text-brand-cyan hover:text-white cursor-pointer shrink-0 ml-2"
+                >
+                  Use 1-Click Google Sign-In
+                </button>
+              </div>
+            )}
           </div>
 
           {mode !== 'forgot' && (
