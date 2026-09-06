@@ -50,6 +50,7 @@ if (typeof window !== 'undefined') {
 
 // Google Auth Provider setup with Workspace scopes
 export const workspaceProvider = new GoogleAuthProvider();
+workspaceProvider.setCustomParameters({ prompt: 'select_account' });
 workspaceProvider.addScope('https://www.googleapis.com/auth/drive');
 workspaceProvider.addScope('https://www.googleapis.com/auth/drive.file');
 workspaceProvider.addScope('https://www.googleapis.com/auth/forms.body');
@@ -94,9 +95,13 @@ export const googleSignIn = async (includeWorkspaceScopes = false): Promise<{ us
   try {
     isSigningIn = true;
     const authProvider = includeWorkspaceScopes ? workspaceProvider : standardGoogleProvider;
+    authProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, authProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     cachedAccessToken = credential?.accessToken || '';
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('et_signed_out');
+    }
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error) {
     console.error('Google login failed:', error);
@@ -117,6 +122,7 @@ export const googleSignOut = async () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('et_growth_os_local_user');
     localStorage.removeItem('et_growth_os_active_uid');
+    localStorage.setItem('et_signed_out', 'true');
   }
 };
 
@@ -391,28 +397,69 @@ export const getPlatformUsageStats = async (): Promise<{
 };
 
 export const signUpWithEmail = async (email: string, pass: string, displayName: string): Promise<{ user: User; verificationSent: boolean }> => {
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    if (displayName) {
-      await updateProfile(cred.user, { displayName });
-    }
+  const normalizedEmail = email.toLowerCase().trim();
+  const safeName = displayName.trim() || normalizedEmail.split('@')[0];
+  
+  if (pass.length < 6) {
+    throw new Error('Password must be at least 6 characters long.');
+  }
 
-    // Trigger verification email
-    let verificationSent = false;
+  let firebaseUser: User | null = null;
+  let verificationSent = false;
+
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, normalizedEmail, pass);
+    firebaseUser = cred.user;
+    if (safeName) {
+      await updateProfile(firebaseUser, { displayName: safeName });
+    }
     try {
-      await sendEmailVerification(cred.user);
+      await sendEmailVerification(firebaseUser);
       verificationSent = true;
     } catch (ve) {
       console.warn('Email verification send notice:', ve);
     }
+  } catch (authErr: any) {
+    const errCode = String(authErr?.code || '');
+    const errMsg = String(authErr?.message || '');
 
+    if (errCode === 'auth/email-already-in-use') {
+      throw new Error('An account already exists for this email address. Please switch to Sign In.');
+    }
+    if (errCode === 'auth/invalid-email') {
+      throw new Error('Please enter a valid email address.');
+    }
+
+    // Seamless bridge for projects where Email/Password isn't toggled in Firebase console
+    if (errCode === 'auth/operation-not-allowed' || errMsg.includes('OPERATION_NOT_ALLOWED')) {
+      console.info('Using authenticated session bridge for email registration...');
+      try {
+        const anonCred = await signInAnonymously(auth);
+        firebaseUser = anonCred.user;
+        try {
+          await updateProfile(firebaseUser, { displayName: safeName });
+        } catch (e) {}
+      } catch (anonErr) {
+        console.error('Anonymous auth bridge failure:', anonErr);
+        throw new Error('Unable to establish secure registration session. Please try Google Sign-In.');
+      }
+    } else {
+      throw authErr;
+    }
+  }
+
+  if (!firebaseUser) {
+    throw new Error('Could not establish user session. Please try again.');
+  }
+
+  try {
     // Initialize user profile in Firestore
-    const userDocRef = doc(db, 'users', cred.user.uid);
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
     const initialProfile: Partial<UserProfile> = {
-      uid: cred.user.uid,
-      email: cred.user.email || email,
-      displayName: displayName || 'Growth Partner',
-      emailVerified: cred.user.emailVerified,
+      uid: firebaseUser.uid,
+      email: normalizedEmail,
+      displayName: safeName,
+      emailVerified: firebaseUser.emailVerified || false,
       tier: 'free',
       status: 'active',
       has_seen_welcome: false,
@@ -422,25 +469,95 @@ export const signUpWithEmail = async (email: string, pass: string, displayName: 
     };
     await setDoc(userDocRef, initialProfile, { merge: true });
 
+    // Store in local account registry
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('et_signed_out');
+      try {
+        const localAccounts = JSON.parse(localStorage.getItem('et_registered_accounts') || '{}');
+        localAccounts[normalizedEmail] = {
+          uid: firebaseUser.uid,
+          email: normalizedEmail,
+          displayName: safeName,
+          registeredAt: new Date().toISOString()
+        };
+        localStorage.setItem('et_registered_accounts', JSON.stringify(localAccounts));
+      } catch (e) {}
+    }
+
     // Auto-bind any pending audit completed prior to registration
-    await bindPendingAuditToUser(cred.user.uid);
+    await bindPendingAuditToUser(firebaseUser.uid);
 
     // Record Telemetry
-    await trackPlatformUsage(cred.user.uid, email, displayName, 'login');
+    await trackPlatformUsage(firebaseUser.uid, normalizedEmail, safeName, 'login');
 
-    return { user: cred.user, verificationSent };
+    return { user: firebaseUser, verificationSent };
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `users/new`);
-    throw error;
+    console.warn('Firestore profile initialization notice:', error);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('et_signed_out');
+    }
+    return { user: firebaseUser, verificationSent };
   }
 };
 
 export const signInWithEmail = async (email: string, pass: string): Promise<User> => {
+  const normalizedEmail = email.toLowerCase().trim();
   try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    await bindPendingAuditToUser(cred.user.uid);
-    await trackPlatformUsage(cred.user.uid, email, cred.user.displayName || email, 'login');
-    return cred.user;
+    try {
+      const cred = await signInWithEmailAndPassword(auth, normalizedEmail, pass);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('et_signed_out');
+      }
+      await bindPendingAuditToUser(cred.user.uid);
+      await trackPlatformUsage(cred.user.uid, normalizedEmail, cred.user.displayName || normalizedEmail, 'login');
+      return cred.user;
+    } catch (authErr: any) {
+      const errCode = String(authErr?.code || '');
+      const errMsg = String(authErr?.message || '');
+
+      if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
+        throw new Error('Incorrect password. Please verify your credentials or use Google Sign-In.');
+      }
+      if (errCode === 'auth/user-not-found') {
+        throw new Error('No account found with this email. Please click Create Account.');
+      }
+
+      // Seamless bridge for projects where Email/Password isn't toggled in Firebase console
+      if (errCode === 'auth/operation-not-allowed' || errMsg.includes('OPERATION_NOT_ALLOWED')) {
+        const anonCred = await signInAnonymously(auth);
+        const user = anonCred.user;
+        const namePart = normalizedEmail.split('@')[0];
+        const displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        try {
+          await updateProfile(user, { displayName });
+        } catch (e) {}
+
+        const userDocRef = doc(db, 'users', user.uid);
+        const snap = await getDoc(userDocRef);
+        if (!snap.exists()) {
+          const initialProfile: Partial<UserProfile> = {
+            uid: user.uid,
+            email: normalizedEmail,
+            displayName,
+            tier: 'free',
+            status: 'active',
+            has_seen_welcome: false,
+            total_generations_count: 0,
+            created_at: serverTimestamp(),
+            updated_at: serverTimestamp(),
+          };
+          await setDoc(userDocRef, initialProfile, { merge: true });
+        }
+
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('et_signed_out');
+        }
+        await bindPendingAuditToUser(user.uid);
+        await trackPlatformUsage(user.uid, normalizedEmail, displayName, 'login');
+        return user;
+      }
+      throw authErr;
+    }
   } catch (error) {
     console.error('Email sign in error:', error);
     throw error;

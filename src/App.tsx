@@ -69,32 +69,35 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Check for cached local session first
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('et_growth_os_local_user');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed && parsed.uid) {
-            setCurrentUser(parsed);
-            fetchProfile(parsed.uid);
-          }
-        } catch (e) {}
-      }
+    // Check if the user has explicitly signed out
+    const isSignedOut = typeof window !== 'undefined' ? localStorage.getItem('et_signed_out') === 'true' : false;
+
+    if (isSignedOut) {
+      // Force clean signed-out state
+      setCurrentUser(null);
+      setUserProfile(null);
+      setIsWhiteboardOpen(false);
+      setShowWelcomeModal(false);
+      return;
     }
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Re-verify signed out flag before restoring session
+      const currentlySignedOut = typeof window !== 'undefined' ? localStorage.getItem('et_signed_out') === 'true' : false;
+      if (currentlySignedOut) {
+        setCurrentUser(null);
+        setUserProfile(null);
+        return;
+      }
+
       if (user) {
         setCurrentUser(user);
         fetchProfile(user.uid);
       } else {
-        const local = typeof window !== 'undefined' ? localStorage.getItem('et_growth_os_local_user') : null;
-        if (!local) {
-          setCurrentUser(null);
-          setUserProfile(null);
-          setIsWhiteboardOpen(false);
-          setShowWelcomeModal(false);
-        }
+        setCurrentUser(null);
+        setUserProfile(null);
+        setIsWhiteboardOpen(false);
+        setShowWelcomeModal(false);
       }
     });
     return () => unsubscribe();
@@ -114,20 +117,23 @@ export default function App() {
   };
 
   const handleSignOut = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('et_signed_out', 'true');
+      localStorage.removeItem('et_growth_os_local_user');
+      localStorage.removeItem('et_growth_os_active_uid');
+      sessionStorage.clear();
+    }
     try {
       await googleSignOut();
     } catch (e) {
       console.warn('Sign out error:', e);
-    }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('et_growth_os_local_user');
-      sessionStorage.clear();
     }
     setCurrentUser(null);
     setUserProfile(null);
     setIsWhiteboardOpen(false);
     setShowWelcomeModal(false);
     setIsAuthModalOpen(false);
+    triggerToast('Signed Out', 'You have been safely signed out of Growth OS.');
   };
 
   const triggerToast = (title: string, message: string) => {

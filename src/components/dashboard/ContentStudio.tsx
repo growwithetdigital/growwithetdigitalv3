@@ -365,10 +365,23 @@ export default function ContentStudio({
           </div>
 
           {/* Social Media Platform Captions */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4 shadow-sm">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4 shadow-sm text-left">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-[var(--text)] uppercase tracking-wider font-mono flex items-center gap-2">
+                  <span>4 Versions of Engaging Social Media Copy</span>
+                </h4>
+                <p className="text-[11px] text-[var(--muted)] mt-0.5">
+                  Tailored promotional options to syndicate your blog post across your core distribution channels.
+                </p>
+              </div>
+              <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                4 Options Ready
+              </span>
+            </div>
             
             {/* Channel Tabs */}
-            <div className="grid grid-cols-5 gap-1 p-1 rounded-xl border border-[var(--border)] bg-[var(--surface2)] text-[10px] font-mono uppercase tracking-wider">
+            <div className="grid grid-cols-4 gap-1 p-1 rounded-xl border border-[var(--border)] bg-[var(--surface2)] text-[10px] font-mono uppercase tracking-wider">
               <button
                 type="button"
                 onClick={() => setActivePlatform('linkedin')}
@@ -378,7 +391,7 @@ export default function ContentStudio({
                     : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
-                LinkedIn
+                1. LinkedIn
               </button>
               <button
                 type="button"
@@ -389,18 +402,7 @@ export default function ContentStudio({
                     : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
-                X / Twitter
-              </button>
-              <button
-                type="button"
-                onClick={() => setActivePlatform('facebook')}
-                className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
-                  activePlatform === 'facebook'
-                    ? 'bg-[var(--accent)] text-slate-950 font-bold'
-                    : 'text-[var(--muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                Facebook
+                2. X / Twitter
               </button>
               <button
                 type="button"
@@ -411,7 +413,7 @@ export default function ContentStudio({
                     : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
-                Instagram
+                3. Instagram
               </button>
               <button
                 type="button"
@@ -422,7 +424,7 @@ export default function ContentStudio({
                     : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
-                Email
+                4. Email
               </button>
             </div>
 

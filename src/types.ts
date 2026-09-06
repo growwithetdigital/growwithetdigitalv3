@@ -61,6 +61,18 @@ export interface UserProfile {
   target_audience?: string;
   industry?: string;
   brand_logo_url?: string;
+  brand_dna?: {
+    voice_archetype?: string;
+    tone_descriptors?: string[];
+    core_value_prop?: string;
+    target_persona?: string;
+    differentiator?: string;
+    extracted_keywords?: string[];
+    summary?: string;
+    extracted_from_url?: string;
+    extracted_at?: string;
+  };
+  writing_sample?: string;
   login_count?: number;
   last_sign_in_at?: string;
   last_active_at?: string;
