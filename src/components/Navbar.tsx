@@ -138,6 +138,13 @@ export default function Navbar({
             Newsletter
             <ArrowUpRight className="w-3 h-3 text-slate-400" />
           </a>
+          <button
+            onClick={onOpenBooking}
+            className="font-sans text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-cyan-650 transition-colors cursor-pointer flex items-center gap-1"
+            id="nav-connect-tab-btn"
+          >
+            Let's Connect
+          </button>
         </nav>
 
         {/* Right aligned call to action */}
@@ -145,7 +152,7 @@ export default function Navbar({
           <button
             type="button"
             onClick={onOpenCalendar || onOpenBooking}
-            className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
+            className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-extrabold uppercase tracking-widest px-5 py-2.5 rounded-xl overflow-hidden transition-all shadow-md active:scale-95 cursor-pointer"
             id="navbar-booking-btn"
           >
             <span className="relative z-10 flex items-center gap-1.5">
@@ -219,9 +226,22 @@ export default function Navbar({
               Newsletter
               <ArrowUpRight className="w-4 h-4 text-slate-400" />
             </a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenBooking();
+              }}
+              className="text-left font-sans text-sm font-semibold py-2 border-b border-slate-100 text-slate-900 hover:text-cyan-600 cursor-pointer flex items-center justify-between"
+              id="navbar-mobile-connect-tab-btn"
+            >
+              <span className="font-bold text-cyan-700">Let's Connect</span>
+              <span className="font-mono text-[9px] font-extrabold uppercase bg-brand-cyan/20 text-cyan-800 px-2.5 py-1 rounded-md">
+                Inquiry Form
+              </span>
+            </button>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5 pt-2">
             <button
               type="button"
               onClick={() => {

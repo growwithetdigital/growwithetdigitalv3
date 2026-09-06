@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, ShieldCheck } from 'lucide-react';
+import { Mail, ShieldCheck, ArrowUpRight, Sparkles } from 'lucide-react';
 
-export default function FounderBio() {
+interface FounderBioProps {
+  onOpenBooking?: () => void;
+}
+
+export default function FounderBio({ onOpenBooking }: FounderBioProps) {
   const [imageError, setImageError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -166,14 +170,30 @@ export default function FounderBio() {
             </motion.div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 pt-4 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3.5 pt-4 border-t border-slate-100">
               {!isExpanded ? (
-                <button
-                  onClick={() => setIsExpanded(true)}
-                  className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-850 text-white font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                >
-                  Learn More
-                </button>
+                <>
+                  <button
+                    onClick={() => setIsExpanded(true)}
+                    className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-850 text-white font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    Learn More
+                  </button>
+
+                  {onOpenBooking && (
+                    <button
+                      type="button"
+                      onClick={onOpenBooking}
+                      className="group inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                      id="founder-connect-cta-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        Let's Connect
+                        <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <>
                   <button
@@ -184,16 +204,30 @@ export default function FounderBio() {
                         element.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className="inline-flex items-center justify-center bg-slate-150 hover:bg-slate-200 text-slate-700 border border-slate-200 font-display text-xs font-extrabold uppercase tracking-widest px-6 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                    className="inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-display text-xs font-extrabold uppercase tracking-widest px-6 py-4 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     Show Less
                   </button>
 
+                  {onOpenBooking && (
+                    <button
+                      type="button"
+                      onClick={onOpenBooking}
+                      className="group inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                      id="founder-expanded-connect-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        Let's Connect
+                        <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </span>
+                    </button>
+                  )}
+
                   <a
                     href="mailto:hello@growwithetdigital.com?subject=Re%3A%20Let's%20Connect"
-                    className="group inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                    className="group inline-flex items-center justify-center bg-slate-900 hover:bg-slate-850 text-white font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                   >
-                    <Mail className="w-4 h-4 mr-2 text-slate-950 animate-pulse" />
+                    <Mail className="w-4 h-4 mr-2 text-brand-cyan" />
                     Email Me Directly
                   </a>
                 </>

@@ -127,6 +127,27 @@ export default function ServiceCardsDeepDive({
           })}
         </div>
 
+        {/* Custom scope / Inquiries callout with Let's Connect */}
+        <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-slate-900/30 border border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div>
+            <h4 className="font-display text-sm sm:text-base font-bold text-white">
+              Need a tailored growth scope or hybrid engagement?
+            </h4>
+            <p className="font-sans text-xs text-slate-400 mt-1">
+              Have specific goals, multichannel questions, or unique timeline requirements? Send us a quick note.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenBooking}
+            className="shrink-0 inline-flex items-center justify-center bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 hover:border-slate-600 font-display text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+            id="services-connect-inquiry-btn"
+          >
+            <span>Let's Connect</span>
+            <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 text-brand-cyan" />
+          </button>
+        </div>
+
       </div>
     </section>
   );

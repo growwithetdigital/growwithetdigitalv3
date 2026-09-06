@@ -1,8 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Eye, Compass, Rocket, TrendingUp } from 'lucide-react';
+import { Eye, Compass, Rocket, TrendingUp, ArrowUpRight } from 'lucide-react';
 
-export default function HowWeBuildGrowth() {
+interface HowWeBuildGrowthProps {
+  onOpenBooking?: () => void;
+}
+
+export default function HowWeBuildGrowth({ onOpenBooking }: HowWeBuildGrowthProps) {
   const steps = [
     {
       step: '01',
@@ -104,6 +108,24 @@ export default function HowWeBuildGrowth() {
             })}
           </div>
         </div>
+
+        {/* Let's Connect CTA callout */}
+        {onOpenBooking && (
+          <div className="mt-16 text-center flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+            <span className="font-sans text-xs sm:text-sm text-slate-300">
+              Ready to deploy this 4-step framework for your business?
+            </span>
+            <button
+              type="button"
+              onClick={onOpenBooking}
+              className="group inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+              id="methodology-connect-btn"
+            >
+              <span>Let's Connect</span>
+              <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+          </div>
+        )}
 
       </div>
     </section>

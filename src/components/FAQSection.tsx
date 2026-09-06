@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, HelpCircle, MessageSquare } from 'lucide-react';
+import { ChevronDown, HelpCircle, MessageSquare, ArrowUpRight } from 'lucide-react';
 
 interface FAQItem {
   id: number;
   question: string;
   answer: string;
+}
+
+interface FAQSectionProps {
+  onOpenBooking?: () => void;
 }
 
 const faqItems: FAQItem[] = [
@@ -61,7 +65,7 @@ const faqItems: FAQItem[] = [
   }
 ];
 
-export default function FAQSection() {
+export default function FAQSection({ onOpenBooking }: FAQSectionProps) {
   const [openId, setOpenId] = useState<number | null>(null);
 
   const toggleItem = (id: number) => {
@@ -137,6 +141,34 @@ export default function FAQSection() {
             );
           })}
         </div>
+
+        {/* Still have questions banner with Let's Connect */}
+        {onOpenBooking && (
+          <div className="mt-12 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-brand-cyan/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left shadow-xl">
+            <div className="space-y-1.5 max-w-xl">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-brand-cyan">
+                Direct Strategy Access
+              </span>
+              <h3 className="font-display text-lg sm:text-xl font-bold text-white tracking-tight">
+                Have a question not answered here?
+              </h3>
+              <p className="font-sans text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Every business has unique growth roadblocks. Reach out directly through our quick inquiry form and we'll reply with clear, practical guidance.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenBooking}
+              className="group shrink-0 inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-lg active:scale-95 cursor-pointer shadow-cyan-950/40"
+              id="faq-connect-cta-btn"
+            >
+              <span className="flex items-center gap-2">
+                Let's Connect
+                <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
+            </button>
+          </div>
+        )}
 
       </div>
     </section>

@@ -104,13 +104,13 @@ export default function App() {
       <InstagramFeedGrid onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 7: Editorial Founder Bio (About Section) */}
-      <FounderBio />
+      <FounderBio onOpenBooking={handleOpenBooking} />
 
       {/* SECTION 7.5: How We Build Growth (Four-step process) */}
-      <HowWeBuildGrowth />
+      <HowWeBuildGrowth onOpenBooking={handleOpenBooking} />
 
       {/* SECTION 7.8: Strategic Comparison (Traditional Agency vs. Growth OS Model) */}
-      <ComparisonSection />
+      <ComparisonSection onOpenBooking={handleOpenBooking} />
 
       {/* SECTION 8: Service Card Deep-Dive Architecture */}
       <ServiceCardsDeepDive onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
@@ -119,7 +119,7 @@ export default function App() {
       <PlaybookLeadMagnet onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
 
       {/* SECTION 9.5: Interactive 2026 Marketing FAQs Accordion */}
-      <FAQSection />
+      <FAQSection onOpenBooking={handleOpenBooking} />
 
       {/* SECTION 10: Strategic Insights & Newsletter Capture */}
       <InsightsBlogSection onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />

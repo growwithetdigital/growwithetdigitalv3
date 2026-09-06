@@ -136,17 +136,28 @@ export default function Footer({
               </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={onOpenCalendar || onOpenBooking}
-              className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
-              id="footer-booking-btn"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                Work with Us
-                <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={onOpenBooking}
+                className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white border border-slate-750 font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                id="footer-connect-btn"
+              >
+                Let's Connect
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenCalendar || onOpenBooking}
+                className="group relative inline-flex items-center justify-center bg-brand-cyan hover:bg-cyan-500 text-slate-950 font-display text-xs font-extrabold uppercase tracking-widest px-8 py-4.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                id="footer-booking-btn"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Work with Us
+                  <ArrowUpRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Multi-Column Grid */}
@@ -213,6 +224,17 @@ export default function Footer({
                 Newsletter
                 <ArrowUpRight className="w-3 h-3 text-slate-600" />
               </a>
+              <button 
+                type="button"
+                onClick={onOpenBooking}
+                className="text-brand-cyan hover:text-cyan-300 font-bold transition-colors text-left cursor-pointer inline-flex items-center gap-1.5 pt-1"
+                id="footer-system-nav-connect-btn"
+              >
+                <span>Let's Connect</span>
+                <span className="font-mono text-[8px] uppercase bg-cyan-950/80 text-brand-cyan border border-brand-cyan/30 px-1.5 py-0.5 rounded">
+                  Form
+                </span>
+              </button>
             </div>
           </div>
 

@@ -1,7 +1,11 @@
 import React from 'react';
-import { ShieldAlert, ShieldCheck, XCircle, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, XCircle, CheckCircle2, ArrowUpRight } from 'lucide-react';
 
-export default function ComparisonSection() {
+interface ComparisonSectionProps {
+  onOpenBooking?: () => void;
+}
+
+export default function ComparisonSection({ onOpenBooking }: ComparisonSectionProps) {
   const frustrations = [
     { title: 'Random Posting', desc: 'Content is created on a whim, with no structural distribution matrix or thematic alignment.' },
     { title: 'No Consistency', desc: 'Campaigns start and stall, causing search engines and social algorithms to flag your profiles as inactive.' },
@@ -131,11 +135,29 @@ export default function ComparisonSection() {
         </div>
 
         {/* Summary Statement */}
-        <div className="mt-20 text-center max-w-3xl mx-auto border border-dashed border-slate-900 rounded-2xl p-6 bg-slate-900/5">
+        <div className="mt-16 text-center max-w-3xl mx-auto border border-dashed border-slate-900 rounded-2xl p-6 bg-slate-900/5">
           <p className="font-sans text-xs sm:text-sm text-slate-400 leading-relaxed italic">
             "Running your marketing without a centralized OS is like writing application code without a runtime framework. You waste effort rebuilding low-level services instead of delivering real user value."
           </p>
         </div>
+
+        {/* Let's Connect Quick Action */}
+        {onOpenBooking && (
+          <div className="mt-10 text-center flex flex-col sm:flex-row items-center justify-center gap-3">
+            <span className="font-sans text-xs sm:text-sm text-slate-400">
+              Want to see how this operating system applies to your business?
+            </span>
+            <button
+              type="button"
+              onClick={onOpenBooking}
+              className="group inline-flex items-center justify-center bg-cyan-950/60 hover:bg-cyan-900/60 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan font-display text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-sm"
+              id="comparison-connect-btn"
+            >
+              <span>Let's Connect</span>
+              <ArrowUpRight className="w-3.5 h-3.5 ml-1 text-brand-cyan group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+          </div>
+        )}
 
       </div>
     </section>
