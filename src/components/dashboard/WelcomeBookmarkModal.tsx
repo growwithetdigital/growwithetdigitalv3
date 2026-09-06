@@ -1,25 +1,32 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Bookmark, Smartphone, Monitor, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
+import { Bookmark, Smartphone, Monitor, ArrowRight, X } from 'lucide-react';
 import { updateUserWelcomeFlag } from '../../lib/firebase';
 
 interface WelcomeBookmarkModalProps {
   uid: string;
   isOpen: boolean;
   onClose: () => void;
+  onEnterGOS?: () => void;
 }
 
-export default function WelcomeBookmarkModal({ uid, isOpen, onClose }: WelcomeBookmarkModalProps) {
+export default function WelcomeBookmarkModal({ uid, isOpen, onClose, onEnterGOS }: WelcomeBookmarkModalProps) {
   if (!isOpen) return null;
 
-  const handleDismiss = async () => {
+  const handleEnterGOS = async () => {
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`et_welcome_seen_${uid}`, 'true');
+      }
       if (uid) {
-        await updateUserWelcomeFlag(uid, true);
+        await updateUserWelcomeFlag(uid, true).catch(() => {});
       }
     } catch (err) {
-      console.error('Failed to update welcome flag in Firestore:', err);
+      console.warn('Notice updating welcome flag:', err);
     } finally {
+      if (onEnterGOS) {
+        onEnterGOS();
+      }
       onClose();
     }
   };
@@ -30,9 +37,18 @@ export default function WelcomeBookmarkModal({ uid, isOpen, onClose }: WelcomeBo
         initial={{ opacity: 0, scale: 0.92, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-brand-cyan/40 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6 shadow-cyan-950/40"
+        className="relative w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-brand-cyan/40 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6 shadow-cyan-950/40 text-left"
         id="welcome-bookmark-modal"
       >
+        {/* Close button */}
+        <button
+          onClick={handleEnterGOS}
+          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-full bg-slate-800/60 hover:bg-slate-800 transition-colors cursor-pointer"
+          aria-label="Close modal and enter Growth OS"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Glow and Icon */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center text-brand-cyan shadow-inner">
@@ -84,13 +100,12 @@ export default function WelcomeBookmarkModal({ uid, isOpen, onClose }: WelcomeBo
         {/* Call to action dismissal */}
         <button
           type="button"
-          onClick={handleDismiss}
-          className="w-full py-4 bg-brand-cyan hover:bg-cyan-400 active:scale-98 text-slate-950 font-display text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-950/50 flex items-center justify-center gap-2 cursor-pointer"
+          onClick={handleEnterGOS}
+          className="w-full py-4 bg-brand-cyan hover:bg-cyan-400 active:scale-98 text-slate-950 font-display text-sm font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-cyan-950/50 flex items-center justify-center gap-2.5 cursor-pointer"
           id="dismiss-welcome-btn"
         >
-          <CheckCircle2 className="w-4 h-4 text-slate-950" />
-          <span>I've Bookmarked It — Enter My Whiteboard</span>
-          <ArrowRight className="w-4 h-4 text-slate-950" />
+          <span>Enter Growth Operating System</span>
+          <ArrowRight className="w-5 h-5 text-slate-950" />
         </button>
       </motion.div>
     </div>

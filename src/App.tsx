@@ -22,7 +22,7 @@ import LegalModals from './components/LegalModals';
 import AuthModal from './components/dashboard/AuthModal';
 import WelcomeBookmarkModal from './components/dashboard/WelcomeBookmarkModal';
 import WhiteboardShell from './components/dashboard/WhiteboardShell';
-import { auth, getUserProfile } from './lib/firebase';
+import { auth, getUserProfile, updateUserWelcomeFlag, googleSignOut } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { UserProfile } from './types';
 
@@ -46,23 +46,55 @@ export default function App() {
     try {
       const p = await getUserProfile(uid);
       setUserProfile(p);
-      if (p && p.has_seen_welcome === false) {
+      const welcomeSeen = typeof window !== 'undefined' ? localStorage.getItem(`et_welcome_seen_${uid}`) === 'true' : false;
+      if (p && p.has_seen_welcome === false && !welcomeSeen) {
         setShowWelcomeModal(true);
+      } else {
+        setShowWelcomeModal(false);
       }
     } catch (e) {
       console.error('Failed to fetch profile:', e);
     }
   };
 
+  const handleEnterGrowthOS = () => {
+    setShowWelcomeModal(false);
+    setIsWhiteboardOpen(true);
+    if (currentUser?.uid) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`et_welcome_seen_${currentUser.uid}`, 'true');
+      }
+      updateUserWelcomeFlag(currentUser.uid, true).catch(() => {});
+    }
+  };
+
   useEffect(() => {
+    // Check for cached local session first
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('et_growth_os_local_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.uid) {
+            setCurrentUser(parsed);
+            fetchProfile(parsed.uid);
+          }
+        } catch (e) {}
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
       if (user) {
+        setCurrentUser(user);
         fetchProfile(user.uid);
       } else {
-        setUserProfile(null);
-        setIsWhiteboardOpen(false);
-        setShowWelcomeModal(false);
+        const local = typeof window !== 'undefined' ? localStorage.getItem('et_growth_os_local_user') : null;
+        if (!local) {
+          setCurrentUser(null);
+          setUserProfile(null);
+          setIsWhiteboardOpen(false);
+          setShowWelcomeModal(false);
+        }
       }
     });
     return () => unsubscribe();
@@ -79,6 +111,23 @@ export default function App() {
   const handleOpenLegal = (type: 'privacy' | 'security') => {
     setLegalType(type);
     setIsLegalOpen(true);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await googleSignOut();
+    } catch (e) {
+      console.warn('Sign out error:', e);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('et_growth_os_local_user');
+      sessionStorage.clear();
+    }
+    setCurrentUser(null);
+    setUserProfile(null);
+    setIsWhiteboardOpen(false);
+    setShowWelcomeModal(false);
+    setIsAuthModalOpen(false);
   };
 
   const triggerToast = (title: string, message: string) => {
@@ -126,16 +175,15 @@ export default function App() {
           onRefreshProfile={() => fetchProfile(currentUser.uid)}
           onCloseDashboard={() => setIsWhiteboardOpen(false)}
           onOpenBooking={handleOpenBooking}
+          onSignOut={handleSignOut}
         />
 
         {showWelcomeModal && (
           <WelcomeBookmarkModal
             uid={currentUser.uid}
             isOpen={showWelcomeModal}
-            onClose={() => {
-              setShowWelcomeModal(false);
-              fetchProfile(currentUser.uid);
-            }}
+            onClose={handleEnterGrowthOS}
+            onEnterGOS={handleEnterGrowthOS}
           />
         )}
 
@@ -158,6 +206,7 @@ export default function App() {
         profile={userProfile}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenDashboard={() => setIsWhiteboardOpen(true)}
+        onSignOut={handleSignOut}
       />
 
       {/* SECTION 2: Hero Engine */}
@@ -228,6 +277,7 @@ export default function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={(user) => {
+          setCurrentUser(user);
           fetchProfile(user.uid);
           setIsWhiteboardOpen(true);
         }}
@@ -238,10 +288,8 @@ export default function App() {
         <WelcomeBookmarkModal
           uid={currentUser.uid}
           isOpen={showWelcomeModal}
-          onClose={() => {
-            setShowWelcomeModal(false);
-            fetchProfile(currentUser.uid);
-          }}
+          onClose={handleEnterGrowthOS}
+          onEnterGOS={handleEnterGrowthOS}
         />
       )}
 

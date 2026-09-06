@@ -29,6 +29,8 @@ import ContentStudio from './ContentStudio';
 import BusinessProfileForm from './BusinessProfileForm';
 import AuditorArchivePanel from './AuditorArchivePanel';
 import FeaturedInsightsPanel from './FeaturedInsightsPanel';
+import OwnerTelemetryModal from './OwnerTelemetryModal';
+import { WORKING_MARKETING_TIPS } from '../../data/marketingTips';
 
 interface WhiteboardShellProps {
   user: any;
@@ -36,6 +38,7 @@ interface WhiteboardShellProps {
   onRefreshProfile: () => void;
   onCloseDashboard: () => void;
   onOpenBooking: () => void;
+  onSignOut?: () => void;
 }
 
 // Brand Palette (ET Digital Design System)
@@ -145,6 +148,7 @@ export default function WhiteboardShell({
   onRefreshProfile,
   onCloseDashboard,
   onOpenBooking,
+  onSignOut,
 }: WhiteboardShellProps) {
   const [activeTab, setActiveTab] = useState<NavTabId>('overview');
   const [dark, setDark] = useState(true);
@@ -154,6 +158,17 @@ export default function WhiteboardShell({
   const [genStepText, setGenStepText] = useState('');
   const [genError, setGenError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [dailyTipIndex, setDailyTipIndex] = useState(0);
+  const [copiedDailyTip, setCopiedDailyTip] = useState(false);
+
+  // Check if current user is owner / admin
+  const isOwner = Boolean(
+    user?.email === 'ericlamarthomas@gmail.com' ||
+    user?.uid?.includes('owner') ||
+    profile?.role === 'owner' ||
+    profile?.role === 'admin'
+  );
 
   // Check 90-day rate limit for Free tier
   const eligibility = checkUserGenerationEligibility(profile);
@@ -385,7 +400,7 @@ By operating with structured systems rather than random tactics, **${clientName}
     { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
     { id: 'content_studio', label: 'Content Studio', icon: Layers },
     { id: 'foundation', label: 'Marketing Foundation', icon: Compass },
-    { id: 'insights', label: 'Featured Insights', icon: BookOpen },
+    { id: 'insights', label: 'Industry Insights & Tactics', icon: BookOpen },
     { id: 'auditor', label: 'Auditor & Diagnostics', icon: BarChart3 },
     { id: 'profile', label: 'Business Profile & Voice', icon: Target },
     { id: 'roadmap', label: 'Quarterly Roadmap', icon: Map },
@@ -515,6 +530,21 @@ By operating with structured systems rather than random tactics, **${clientName}
             <span>{isProfileComplete ? 'Voice Calibrated' : 'Calibrate Voice'}</span>
           </button>
 
+          {/* Owner Platform Telemetry Button */}
+          {isOwner && (
+            <button
+              type="button"
+              onClick={() => setIsTelemetryOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-950/50 text-cyan-300 font-mono text-[11px] font-bold hover:bg-cyan-900/60 transition-all cursor-pointer shadow-sm"
+              title="View Platform Usage & User Activity"
+              id="whiteboard-owner-telemetry-btn"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-brand-cyan" />
+              <span className="hidden md:inline">Platform Usage</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+          )}
+
           {/* Upgrade Tier Button */}
           {profile?.tier === 'free' && (
             <button
@@ -531,11 +561,20 @@ By operating with structured systems rather than random tactics, **${clientName}
           {/* Sign Out Button */}
           <button
             type="button"
-            onClick={() => googleSignOut()}
-            className="p-2 text-[var(--muted)] hover:text-[var(--text)] rounded-xl bg-[var(--surface2)] hover:bg-[var(--border)] transition-colors cursor-pointer"
-            title="Sign Out"
+            onClick={async () => {
+              if (onSignOut) {
+                onSignOut();
+              } else {
+                await googleSignOut();
+                onCloseDashboard();
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold text-[var(--muted)] hover:text-white rounded-xl bg-[var(--surface2)] hover:bg-rose-950/60 hover:text-rose-300 hover:border-rose-500/40 border border-[var(--border)] transition-all cursor-pointer shadow-xs"
+            title="Sign Out of Growth OS"
+            id="whiteboard-signout-btn"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
           </button>
         </div>
       </header>
@@ -609,6 +648,122 @@ By operating with structured systems rather than random tactics, **${clientName}
               title={`${clientName} — Growth OS Dashboard`}
               desc="A real-time executive view of your category authority, foundation health, and quarterly execution priorities."
             />
+
+            {/* Daily Growth Dispatch: Tested Marketing Tactic (Dynamic Return Experience) */}
+            {(() => {
+              const currentTip = WORKING_MARKETING_TIPS[dailyTipIndex % WORKING_MARKETING_TIPS.length];
+              return (
+                <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-slate-900 via-[var(--surface)] to-[var(--surface2)] p-6 sm:p-7 shadow-lg relative overflow-hidden text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4 mb-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-brand-cyan/20 text-cyan-300 border border-brand-cyan/40">
+                        Daily Growth Dispatch
+                      </span>
+                      <span className="font-mono text-[9px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/20">
+                        {currentTip.category}
+                      </span>
+                      <span className="font-mono text-[9px] font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">
+                        {currentTip.impactMetric}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDailyTipIndex(prev => (prev + 1) % WORKING_MARKETING_TIPS.length)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[var(--surface2)] hover:bg-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] font-mono text-[10px] font-bold transition-all cursor-pointer border border-[var(--border)]"
+                        title="Load Next Tested Marketing Tactic"
+                      >
+                        <RefreshCw className="w-3 h-3 text-brand-cyan" />
+                        <span>Next Tactic ({((dailyTipIndex % WORKING_MARKETING_TIPS.length) + 1)}/{WORKING_MARKETING_TIPS.length})</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('insights')}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-brand-cyan/15 hover:bg-brand-cyan/25 text-cyan-300 font-mono text-[10px] font-bold transition-all cursor-pointer border border-brand-cyan/30"
+                      >
+                        <span>Full Tactics Vault</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold text-[var(--text)] tracking-tight mb-2">
+                      {currentTip.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed mb-4">
+                      <strong className="text-[var(--text)]">Tested Tactic: </strong>
+                      {currentTip.tactic}
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-4">
+                      <div className="p-3.5 rounded-2xl bg-[var(--surface2)] border border-[var(--border)]">
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-amber-400 font-bold block mb-1">
+                          Research Proof & Mechanism
+                        </span>
+                        <p className="text-xs text-[var(--muted)] leading-relaxed">
+                          {currentTip.whyItWorks}
+                        </p>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-[var(--surface2)] border border-[var(--border)]">
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-400 font-bold block mb-1">
+                          Action Blueprint Steps
+                        </span>
+                        <ul className="space-y-1 text-xs text-[var(--text)]">
+                          {currentTip.stepByStep.slice(0, 2).map((s, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <span className="font-mono text-[10px] text-brand-cyan shrink-0 mt-0.5">0{idx + 1}.</span>
+                              <span className="line-clamp-2">{s}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                      <span className="text-[10px] font-mono text-[var(--muted)]">
+                        Tag: {currentTip.tag} • Live field data tested in active campaigns
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = `🔥 [ET DIGITAL TESTED MARKETING TACTIC: ${currentTip.title}]
+Category: ${currentTip.category}
+Tactic: ${currentTip.tactic}
+Expected Impact: ${currentTip.impactMetric}
+Why It Works: ${currentTip.whyItWorks}
+Steps:\n${currentTip.stepByStep.map((st, i) => `${i + 1}. ${st}`).join('\n')}`;
+                          navigator.clipboard.writeText(text);
+                          setCopiedDailyTip(true);
+                          setTimeout(() => setCopiedDailyTip(false), 2000);
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                          copiedDailyTip
+                            ? 'bg-emerald-500 text-slate-950 shadow-md'
+                            : 'bg-brand-cyan hover:bg-cyan-400 text-slate-950 shadow-sm'
+                        }`}
+                      >
+                        {copiedDailyTip ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Playbook Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy Tactic Brief</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Row 1: Marketing Health & Ideal Client */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -999,6 +1154,13 @@ By operating with structured systems rather than random tactics, **${clientName}
           </motion.div>
         </div>
       )}
+
+      {/* Owner Platform Usage Telemetry Modal */}
+      <OwnerTelemetryModal
+        isOpen={isTelemetryOpen}
+        onClose={() => setIsTelemetryOpen(false)}
+        currentEmail={user?.email}
+      />
 
     </div>
   );

@@ -61,8 +61,33 @@ export interface UserProfile {
   target_audience?: string;
   industry?: string;
   brand_logo_url?: string;
+  login_count?: number;
+  last_sign_in_at?: string;
+  last_active_at?: string;
+  role?: 'owner' | 'admin' | 'client';
   created_at?: any;
   updated_at?: any;
+}
+
+export interface PlatformTelemetryEvent {
+  id: string;
+  uid: string;
+  userEmail: string;
+  userName: string;
+  action: 'login' | 'content_generation' | 'audit_completed' | 'profile_updated' | 'roadmap_reviewed' | 'tactic_copied';
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+export interface MarketingTip {
+  id: string;
+  category: 'AEO & AI Search' | 'Short-Form Video' | 'Local Authority' | 'B2B & Inbound' | 'CRO & Conversion';
+  title: string;
+  tactic: string;
+  whyItWorks: string;
+  stepByStep: string[];
+  impactMetric: string;
+  tag: string;
 }
 
 export interface AuditRecord {

@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { 
   BookOpen, Sparkles, Clock, Calendar, ArrowUpRight, 
-  Check, Copy, ExternalLink, ChevronRight, Share2, Eye
+  Check, Copy, ExternalLink, ChevronRight, Share2, Eye,
+  TrendingUp, Zap, Target, Lightbulb
 } from 'lucide-react';
 import ArticleModal, { ArticleData } from '../ArticleModal';
+import MarketingIntelFeed from './MarketingIntelFeed';
 
 interface FeaturedInsightsPanelProps {
   onOpenBooking?: () => void;
   onOpenCalendar?: () => void;
+  onTacticCopied?: (title: string) => void;
 }
 
 export const FEATURED_ARTICLES: ArticleData[] = [
@@ -90,7 +93,9 @@ export const FEATURED_ARTICLES: ArticleData[] = [
 export default function FeaturedInsightsPanel({
   onOpenBooking,
   onOpenCalendar,
+  onTacticCopied
 }: FeaturedInsightsPanelProps) {
+  const [subTab, setSubTab] = useState<'tactics' | 'deepdives'>('tactics');
   const [selectedArticle, setSelectedArticle] = useState<ArticleData | null>(null);
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
 
@@ -101,18 +106,24 @@ export default function FeaturedInsightsPanel({
 
   return (
     <div className="space-y-6" id="featured-insights-panel">
-      {/* Header */}
+      {/* Header Banner with Experience Positioning */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-brand-cyan" />
-              <h3 className="font-display text-xl font-bold text-white tracking-tight">
-                Featured Insights from ET Digital
-              </h3>
+              <span className="font-mono text-[9px] font-black uppercase tracking-widest text-brand-cyan bg-cyan-950/80 px-2.5 py-0.5 rounded border border-brand-cyan/30">
+                Strategic Intelligence Desk
+              </span>
+              <span className="font-mono text-[9px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">
+                Updated Weekly
+              </span>
             </div>
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight mt-2 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-brand-cyan" />
+              <span>Industry Insights & Tested Marketing Tactics</span>
+            </h3>
             <p className="font-sans text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Curated strategic research, market shift studies, and revenue attribution playbooks directly from our main intelligence desk.
+              Proprietary research, real-world marketing experiments currently working, and tactical playbooks to keep your growth engine ahead of algorithm and platform shifts.
             </p>
           </div>
 
@@ -120,81 +131,134 @@ export default function FeaturedInsightsPanel({
             href="https://growwithetdigital.beehiiv.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 text-brand-cyan text-xs font-mono font-bold border border-slate-750 transition-colors self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-brand-cyan text-xs font-mono font-bold border border-slate-700 transition-colors self-start sm:self-auto cursor-pointer shrink-0"
           >
-            <span>Subscribe to Weekly Brief</span>
+            <span>Subscribe to Newsletter</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
-      </div>
 
-      {/* Articles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {FEATURED_ARTICLES.map((article) => (
-          <div
-            key={article.id}
-            className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all shadow-xl group"
+        {/* Sub-tab switcher */}
+        <div className="flex items-center gap-2 mt-6 pt-5 border-t border-slate-800">
+          <button
+            type="button"
+            onClick={() => setSubTab('tactics')}
+            className={`px-4 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              subTab === 'tactics'
+                ? 'bg-brand-cyan text-slate-950 shadow-md'
+                : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
           >
-            <div>
-              {/* Image banner */}
-              <div className="relative aspect-[16/9] overflow-hidden bg-slate-950">
-                <img
-                  src={article.imageUrl}
-                  alt={article.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                />
-                <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-sm border border-slate-750 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold text-brand-cyan uppercase tracking-wider">
-                  {article.category}
-                </div>
-              </div>
+            <Zap className="w-3.5 h-3.5" />
+            <span>Tested Tactics (Currently Working)</span>
+            <span className="px-1.5 py-0.2 bg-slate-900/30 text-[10px] rounded-md">
+              6 Active
+            </span>
+          </button>
 
-              {/* Card Content */}
-              <div className="p-6 space-y-3">
-                <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-slate-500" />
-                    <span>{article.date}</span>
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-500" />
-                    <span>{article.readTime}</span>
-                  </span>
-                </div>
-
-                <h4 className="font-display text-lg font-bold text-white group-hover:text-brand-cyan transition-colors leading-snug">
-                  {article.title}
-                </h4>
-
-                <p className="font-sans text-xs text-slate-300 line-clamp-3 leading-relaxed">
-                  {article.summary}
-                </p>
-              </div>
-            </div>
-
-            {/* Read Article CTA Footer */}
-            <div className="px-6 pb-6 pt-2">
-              <button
-                type="button"
-                onClick={() => handleReadArticle(article)}
-                className="w-full py-3 px-4 rounded-xl bg-slate-850 hover:bg-brand-cyan text-slate-300 hover:text-slate-950 font-display text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-750 hover:border-brand-cyan"
-              >
-                <Eye className="w-4 h-4" />
-                <span>Read Full Brief & Sources</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          <button
+            type="button"
+            onClick={() => setSubTab('deepdives')}
+            className={`px-4 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              subTab === 'deepdives'
+                ? 'bg-brand-cyan text-slate-950 shadow-md'
+                : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Research & Market Shift Papers</span>
+            <span className="px-1.5 py-0.2 bg-slate-900/30 text-[10px] rounded-md">
+              2 Papers
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Article Modal Reader */}
-      <ArticleModal
-        isOpen={isArticleModalOpen}
-        onClose={() => setIsArticleModalOpen(false)}
-        article={selectedArticle}
-        onOpenBooking={onOpenBooking}
-        onOpenCalendar={onOpenCalendar}
-      />
+      {/* SUB-TAB 1: TESTED MARKETING TACTICS FEED */}
+      {subTab === 'tactics' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-xs text-slate-400 px-1 font-mono">
+            <span>Filter by strategic focus area:</span>
+            <span>Click "Copy Tactic" to generate complete execution prompt</span>
+          </div>
+          <MarketingIntelFeed 
+            onOpenBooking={onOpenBooking} 
+            onTacticCopied={onTacticCopied} 
+          />
+        </div>
+      )}
+
+      {/* SUB-TAB 2: DEEP-DIVE RESEARCH PAPERS */}
+      {subTab === 'deepdives' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {FEATURED_ARTICLES.map((article) => (
+            <div
+              key={article.id}
+              className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all shadow-xl group"
+            >
+              <div>
+                {/* Image banner */}
+                <div className="relative aspect-[16/9] overflow-hidden bg-slate-950">
+                  <img
+                    src={article.imageUrl}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                  />
+                  <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-sm border border-slate-750 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold text-brand-cyan uppercase tracking-wider">
+                    {article.category}
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-6 space-y-3">
+                  <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-500" />
+                      <span>{article.date}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-slate-500" />
+                      <span>{article.readTime}</span>
+                    </span>
+                  </div>
+
+                  <h4 className="font-display text-lg font-bold text-white group-hover:text-brand-cyan transition-colors leading-snug">
+                    {article.title}
+                  </h4>
+
+                  <p className="font-sans text-xs text-slate-300 line-clamp-3 leading-relaxed">
+                    {article.summary}
+                  </p>
+                </div>
+              </div>
+
+              {/* Read Article CTA Footer */}
+              <div className="px-6 pb-6 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleReadArticle(article)}
+                  className="w-full py-3 px-4 rounded-xl bg-slate-850 hover:bg-brand-cyan text-slate-300 hover:text-slate-950 font-display text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-750 hover:border-brand-cyan"
+                >
+                  <span>Read In-Depth Study</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Article Modal */}
+      {selectedArticle && (
+        <ArticleModal
+          isOpen={isArticleModalOpen}
+          onClose={() => setIsArticleModalOpen(false)}
+          article={selectedArticle}
+          onOpenBooking={onOpenBooking}
+          onOpenCalendar={onOpenCalendar}
+        />
+      )}
     </div>
   );
 }

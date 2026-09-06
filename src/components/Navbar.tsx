@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
-import { Menu, X, ArrowUpRight, Settings, Sparkles, User as UserIcon } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Settings, Sparkles, User as UserIcon, LogOut } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface NavbarProps {
@@ -12,6 +12,7 @@ interface NavbarProps {
   profile?: UserProfile | null;
   onOpenAuthModal?: () => void;
   onOpenDashboard?: () => void;
+  onSignOut?: () => void;
 }
 
 export default function Navbar({ 
@@ -23,6 +24,7 @@ export default function Navbar({
   profile,
   onOpenAuthModal,
   onOpenDashboard,
+  onSignOut,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -159,16 +161,29 @@ export default function Navbar({
         {/* Right aligned call to action */}
         <div className="hidden lg:flex items-center gap-2.5">
           {user ? (
-            <button
-              type="button"
-              onClick={onOpenDashboard}
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-brand-cyan border border-brand-cyan/40 font-display text-[10px] font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
-              id="navbar-growth-os-btn"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-brand-cyan animate-pulse" />
-              <span>My Growth OS</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenDashboard}
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-brand-cyan border border-brand-cyan/40 font-display text-[10px] font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+                id="navbar-growth-os-btn"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-brand-cyan animate-pulse" />
+                <span>My Growth OS</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-display text-[10px] font-bold uppercase tracking-wider px-3 py-2.5 rounded-xl transition-all cursor-pointer shadow-sm"
+                title="Sign Out of Growth OS"
+                id="navbar-signout-btn"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline">Sign Out</span>
+              </button>
+            </div>
           ) : (
             <button
               type="button"
@@ -275,17 +290,31 @@ export default function Navbar({
 
           <div className="flex flex-col gap-2.5 pt-2">
             {user ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenDashboard) onOpenDashboard();
-                }}
-                className="flex items-center justify-center gap-2 w-full bg-slate-900 text-brand-cyan border border-brand-cyan/40 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md transition-all"
-              >
-                <Sparkles className="w-4 h-4 text-brand-cyan" />
-                <span>My Growth OS Whiteboard</span>
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onOpenDashboard) onOpenDashboard();
+                  }}
+                  className="flex items-center justify-center gap-2 w-full bg-slate-900 text-brand-cyan border border-brand-cyan/40 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-brand-cyan" />
+                  <span>My Growth OS Whiteboard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onSignOut) onSignOut();
+                  }}
+                  className="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border border-slate-200 font-display text-xs font-bold uppercase tracking-wider py-2.5 rounded-xl cursor-pointer transition-all"
+                  id="navbar-mobile-signout-btn"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
