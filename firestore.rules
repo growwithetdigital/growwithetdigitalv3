@@ -22,6 +22,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     function isValidBooking(data) {
       return data.name is string && data.name.size() > 0 && data.name.size() <= 100
         && data.email is string && data.email.size() > 0 && data.email.size() <= 100
@@ -31,6 +35,7 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    // Public Bookings
     match /bookings/{bookingId} {
       allow create: if isValidId(bookingId) 
         && incoming().keys().hasAll(['name', 'email', 'company', 'objective', 'createdAt'])
@@ -39,6 +44,38 @@ service cloud.firestore {
       
       allow read: if isSignedIn();
       allow delete: if isSignedIn();
+    }
+
+    // Playbook Lead Downloads
+    match /playbook_downloads/{leadId} {
+      allow create: if isValidId(leadId)
+        && incoming().name is string && incoming().name.size() > 0
+        && incoming().email is string && incoming().email.size() > 0
+        && incoming().createdAt == request.time;
+      allow read: if isSignedIn();
+    }
+
+    // Website Audits (Anonymous submission allowed; handoff binds UID)
+    match /audits/{auditId} {
+      allow create: if isValidId(auditId)
+        && incoming().website_url is string && incoming().website_url.size() > 0
+        && incoming().business_name is string && incoming().business_name.size() > 0;
+      allow read: if !isSignedIn() || (isSignedIn() && (resource.data.uid == null || resource.data.uid == request.auth.uid));
+      allow update: if isSignedIn() && (resource.data.uid == null || resource.data.uid == request.auth.uid);
+    }
+
+    // User Profile Documents
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+
+      // User Content Library Subcollection
+      match /content_library/{contentId} {
+        allow read: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
+      }
     }
   }
 }

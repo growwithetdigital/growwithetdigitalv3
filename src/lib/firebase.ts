@@ -6,17 +6,27 @@ import {
   GoogleAuthProvider, 
   onAuthStateChanged, 
   User,
-  signOut
+  signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  updateProfile
 } from 'firebase/auth';
 import { 
   getFirestore, 
   collection, 
   doc, 
   setDoc, 
+  getDoc,
   getDocs,
+  updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  orderBy
 } from 'firebase/firestore';
+import { UserProfile, AuditRecord, GeneratedContentItem } from '../types';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase
@@ -233,6 +243,263 @@ export const deleteBookingFromFirestore = async (id: string): Promise<void> => {
     await deleteDoc(doc(db, collectionName, id));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `${collectionName}/${id}`);
+    throw error;
+  }
+};
+
+// ============================================================================
+// Growth OS: Authentication, Audit Handoff, 90-Day Rate Limits & Content Library
+// ============================================================================
+
+export const signUpWithEmail = async (email: string, pass: string, displayName: string): Promise<{ user: User; verificationSent: boolean }> => {
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    if (displayName) {
+      await updateProfile(cred.user, { displayName });
+    }
+
+    // Trigger verification email
+    let verificationSent = false;
+    try {
+      await sendEmailVerification(cred.user);
+      verificationSent = true;
+    } catch (ve) {
+      console.warn('Email verification send notice:', ve);
+    }
+
+    // Initialize user profile in Firestore
+    const userDocRef = doc(db, 'users', cred.user.uid);
+    const initialProfile: Partial<UserProfile> = {
+      uid: cred.user.uid,
+      email: cred.user.email || email,
+      displayName: displayName || 'Growth Partner',
+      emailVerified: cred.user.emailVerified,
+      tier: 'free',
+      status: 'active',
+      has_seen_welcome: false,
+      total_generations_count: 0,
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    };
+    await setDoc(userDocRef, initialProfile, { merge: true });
+
+    // Auto-bind any pending audit completed prior to registration
+    await bindPendingAuditToUser(cred.user.uid);
+
+    return { user: cred.user, verificationSent };
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `users/new`);
+    throw error;
+  }
+};
+
+export const signInWithEmail = async (email: string, pass: string): Promise<User> => {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    await bindPendingAuditToUser(cred.user.uid);
+    return cred.user;
+  } catch (error) {
+    console.error('Email sign in error:', error);
+    throw error;
+  }
+};
+
+export const resetPasswordEmail = async (email: string): Promise<boolean> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return true;
+  } catch (error) {
+    console.error('Password reset email error:', error);
+    throw error;
+  }
+};
+
+export const googleSignInWithProfile = async (): Promise<User> => {
+  try {
+    const res = await googleSignIn();
+    if (!res?.user) throw new Error('Google sign-in did not complete.');
+
+    const userDocRef = doc(db, 'users', res.user.uid);
+    const snap = await getDoc(userDocRef);
+    if (!snap.exists()) {
+      const initialProfile: Partial<UserProfile> = {
+        uid: res.user.uid,
+        email: res.user.email || '',
+        displayName: res.user.displayName || 'Growth Partner',
+        photoURL: res.user.photoURL || undefined,
+        emailVerified: res.user.emailVerified,
+        tier: 'free',
+        status: 'active',
+        has_seen_welcome: false,
+        total_generations_count: 0,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      };
+      await setDoc(userDocRef, initialProfile);
+    }
+
+    // Auto-bind pending audit
+    await bindPendingAuditToUser(res.user.uid);
+
+    return res.user;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `users/${auth.currentUser?.uid || 'google_user'}`);
+    throw error;
+  }
+};
+
+export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid));
+    if (snap.exists()) {
+      return snap.data() as UserProfile;
+    }
+    return null;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+    return null;
+  }
+};
+
+export const updateUserWelcomeFlag = async (uid: string, hasSeen: boolean): Promise<void> => {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+      has_seen_welcome: hasSeen,
+      updated_at: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
+    throw error;
+  }
+};
+
+export const cacheAuditSession = async (audit: Partial<AuditRecord>): Promise<string> => {
+  const auditId = audit.id || 'adt_' + Math.random().toString(36).substring(2, 15);
+  const auditPayload: AuditRecord = {
+    id: auditId,
+    uid: auth.currentUser?.uid || null,
+    website_url: audit.website_url || '',
+    business_name: audit.business_name || '',
+    primary_niche: audit.primary_niche || '',
+    target_audience: audit.target_audience || '',
+    growth_bottlenecks: audit.growth_bottlenecks || [],
+    current_monthly_visitors: audit.current_monthly_visitors || '',
+    grade: audit.grade || 'B',
+    created_at: new Date().toISOString(),
+  };
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('et_pending_audit', JSON.stringify(auditPayload));
+  }
+
+  // Also save to Firestore audits collection
+  try {
+    const docRef = doc(db, 'audits', auditId);
+    await setDoc(docRef, {
+      ...auditPayload,
+      created_at: serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn('Firestore anonymous audit cache notice:', e);
+  }
+
+  return auditId;
+};
+
+export const bindPendingAuditToUser = async (uid: string): Promise<void> => {
+  if (typeof window === 'undefined') return;
+  const raw = localStorage.getItem('et_pending_audit');
+  if (!raw) return;
+
+  try {
+    const auditData: AuditRecord = JSON.parse(raw);
+    const userDocRef = doc(db, 'users', uid);
+    
+    // Bind audit to user profile
+    await updateDoc(userDocRef, {
+      audit_id: auditData.id || null,
+      business_name: auditData.business_name || '',
+      website_url: auditData.website_url || '',
+      industry: auditData.primary_niche || '',
+      updated_at: serverTimestamp(),
+    });
+
+    // Update the audit doc with the bound user UID if it exists
+    if (auditData.id) {
+      try {
+        await updateDoc(doc(db, 'audits', auditData.id), {
+          uid: uid,
+          bound_at: serverTimestamp(),
+        });
+      } catch (err) {
+        // Safe fallback
+      }
+    }
+
+    // Clean up temporary local storage
+    localStorage.removeItem('et_pending_audit');
+  } catch (e) {
+    console.error('Audit binding handoff notice:', e);
+  }
+};
+
+export const checkUserGenerationEligibility = (profile: UserProfile | null): { eligible: boolean; daysRemaining: number } => {
+  if (!profile) return { eligible: false, daysRemaining: 90 };
+  if (profile.tier !== 'free') return { eligible: true, daysRemaining: 0 };
+  if (!profile.last_generated_timestamp) return { eligible: true, daysRemaining: 0 };
+
+  const lastGen = profile.last_generated_timestamp.toMillis 
+    ? profile.last_generated_timestamp.toMillis() 
+    : new Date(profile.last_generated_timestamp).getTime();
+  
+  const now = Date.now();
+  const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+  const elapsed = now - lastGen;
+
+  if (elapsed < NINETY_DAYS_MS) {
+    const remaining = Math.ceil((NINETY_DAYS_MS - elapsed) / (1000 * 60 * 60 * 24));
+    return { eligible: false, daysRemaining: remaining };
+  }
+
+  return { eligible: true, daysRemaining: 0 };
+};
+
+export const fetchUserContentLibrary = async (uid: string): Promise<GeneratedContentItem[]> => {
+  try {
+    const collectionRef = collection(db, 'users', uid, 'content_library');
+    const q = query(collectionRef);
+    const snap = await getDocs(q);
+    const items: GeneratedContentItem[] = [];
+    snap.forEach((d) => {
+      items.push({ id: d.id, ...d.data() } as GeneratedContentItem);
+    });
+    return items;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, `users/${uid}/content_library`);
+    return [];
+  }
+};
+
+export const saveContentToLibrary = async (uid: string, item: GeneratedContentItem): Promise<void> => {
+  try {
+    const docRef = doc(db, 'users', uid, 'content_library', item.id);
+    await setDoc(docRef, {
+      ...item,
+      created_at: serverTimestamp(),
+    });
+
+    // Update user timestamp and count
+    const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+    const nextEligible = new Date(Date.now() + NINETY_DAYS_MS);
+    await updateDoc(doc(db, 'users', uid), {
+      last_generated_timestamp: serverTimestamp(),
+      next_eligible_timestamp: nextEligible.toISOString(),
+      total_generations_count: (item as any).total_generations_count ? (item as any).total_generations_count + 1 : 1,
+      updated_at: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `users/${uid}/content_library/${item.id}`);
     throw error;
   }
 };

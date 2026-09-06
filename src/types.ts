@@ -35,3 +35,65 @@ export interface CaseStudy {
   growthOutcomes: { label: string; value: string; desc: string }[];
   performanceHistory: { month: string; before: number; after: number }[];
 }
+
+export type UserTier = 'free' | 'monthly' | 'consultation';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  emailVerified?: boolean;
+  tier: UserTier;
+  status: 'active' | 'suspended' | 'canceled';
+  has_seen_welcome: boolean;
+  last_generated_timestamp?: any;
+  next_eligible_timestamp?: any;
+  total_generations_count: number;
+  audit_id?: string | null;
+  business_name?: string;
+  website_url?: string;
+  industry?: string;
+  brand_logo_url?: string;
+  created_at?: any;
+  updated_at?: any;
+}
+
+export interface AuditRecord {
+  id?: string;
+  uid?: string | null;
+  website_url: string;
+  business_name: string;
+  primary_niche?: string;
+  target_audience?: string;
+  growth_bottlenecks?: string[];
+  current_monthly_visitors?: string;
+  grade?: string;
+  created_at?: any;
+}
+
+export interface GeneratedContentItem {
+  id: string;
+  uid: string;
+  type: string;
+  created_at: any;
+  blog_post: {
+    title: string;
+    target_keyword: string;
+    word_count: number;
+    markdown_content: string;
+    meta_description: string;
+  };
+  social_captions: {
+    linkedin: string;
+    twitter_x: string;
+    facebook: string;
+    instagram_threads: string;
+  };
+  graphic: {
+    storage_path?: string;
+    public_download_url: string;
+    prompt_used?: string;
+    dimensions?: { width: number; height: number };
+  };
+}

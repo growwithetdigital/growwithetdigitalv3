@@ -10,6 +10,7 @@ import InstagramFeedGrid from './components/InstagramFeedGrid';
 import FounderBio from './components/FounderBio';
 import HowWeBuildGrowth from './components/HowWeBuildGrowth';
 import ServiceCardsDeepDive from './components/ServiceCardsDeepDive';
+import GrowthOSAccessBanner from './components/GrowthOSAccessBanner';
 import PlaybookLeadMagnet from './components/PlaybookLeadMagnet';
 import FAQSection from './components/FAQSection';
 import InsightsBlogSection from './components/InsightsBlogSection';
@@ -18,6 +19,12 @@ import BookingModal from './components/BookingModal';
 import CalendarModal from './components/CalendarModal';
 import WorkspaceHub from './components/WorkspaceHub';
 import LegalModals from './components/LegalModals';
+import AuthModal from './components/dashboard/AuthModal';
+import WelcomeBookmarkModal from './components/dashboard/WelcomeBookmarkModal';
+import WhiteboardShell from './components/dashboard/WhiteboardShell';
+import { auth, getUserProfile } from './lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { UserProfile } from './types';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('hero');
@@ -27,6 +34,39 @@ export default function App() {
   const [isLegalOpen, setIsLegalOpen] = useState(false);
   const [legalType, setLegalType] = useState<'privacy' | 'security'>('privacy');
   const [toast, setToast] = useState<{ title: string; message: string } | null>(null);
+
+  // Growth OS Auth & Whiteboard States
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  const fetchProfile = async (uid: string) => {
+    try {
+      const p = await getUserProfile(uid);
+      setUserProfile(p);
+      if (p && p.has_seen_welcome === false) {
+        setShowWelcomeModal(true);
+      }
+    } catch (e) {
+      console.error('Failed to fetch profile:', e);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        fetchProfile(user.uid);
+      } else {
+        setUserProfile(null);
+        setIsWhiteboardOpen(false);
+        setShowWelcomeModal(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleOpenBooking = () => {
     setIsBookingOpen(true);
@@ -77,6 +117,34 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (isWhiteboardOpen && currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white selection:bg-brand-cyan/30">
+        <WhiteboardShell
+          user={currentUser}
+          profile={userProfile}
+          onRefreshProfile={() => fetchProfile(currentUser.uid)}
+          onCloseDashboard={() => setIsWhiteboardOpen(false)}
+          onOpenBooking={handleOpenBooking}
+        />
+
+        {showWelcomeModal && (
+          <WelcomeBookmarkModal
+            uid={currentUser.uid}
+            isOpen={showWelcomeModal}
+            onClose={() => {
+              setShowWelcomeModal(false);
+              fetchProfile(currentUser.uid);
+            }}
+          />
+        )}
+
+        <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
+        <CalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-brand-cyan/25 selection:text-slate-950 font-sans relative antialiased">
       
@@ -86,6 +154,10 @@ export default function App() {
         onOpenBooking={handleOpenBooking}
         onOpenCalendar={handleOpenCalendar}
         onOpenWorkspaceHub={() => setIsWorkspaceOpen(true)}
+        user={currentUser}
+        profile={userProfile}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenDashboard={() => setIsWhiteboardOpen(true)}
       />
 
       {/* SECTION 2: Hero Engine */}
@@ -95,7 +167,11 @@ export default function App() {
       <SocialProofTicker />
 
       {/* SECTION 5: High-Converting Growth & AI Search Auditor Grader */}
-      <GrowthAuditTool onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
+      <GrowthAuditTool 
+        onOpenBooking={handleOpenBooking} 
+        onOpenCalendar={handleOpenCalendar}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+      />
 
       {/* SECTION 6: High-Fidelity Creative Showcase (Dynamic Media Module) */}
       <CreativeShowcase />
@@ -114,6 +190,16 @@ export default function App() {
 
       {/* SECTION 8: Service Card Deep-Dive Architecture */}
       <ServiceCardsDeepDive onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
+
+      {/* SECTION 8.5: Growth Operating System Access & Conversion Cadence */}
+      <GrowthOSAccessBanner
+        user={currentUser}
+        profile={userProfile}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenDashboard={() => setIsWhiteboardOpen(true)}
+        onOpenBooking={handleOpenBooking}
+        onOpenCalendar={handleOpenCalendar}
+      />
 
       {/* SECTION 9: Custom Growth Playbook Lead Magnet */}
       <PlaybookLeadMagnet onOpenBooking={handleOpenBooking} onOpenCalendar={handleOpenCalendar} />
@@ -137,6 +223,28 @@ export default function App() {
       <CalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
       <WorkspaceHub isOpen={isWorkspaceOpen} onClose={() => setIsWorkspaceOpen(false)} />
       
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={(user) => {
+          fetchProfile(user.uid);
+          setIsWhiteboardOpen(true);
+        }}
+      />
+
+      {/* First-time Welcome & Bookmark Modal */}
+      {currentUser && showWelcomeModal && (
+        <WelcomeBookmarkModal
+          uid={currentUser.uid}
+          isOpen={showWelcomeModal}
+          onClose={() => {
+            setShowWelcomeModal(false);
+            fetchProfile(currentUser.uid);
+          }}
+        />
+      )}
+
       {/* Dynamic Legal Modals */}
       <LegalModals 
         isOpen={isLegalOpen} 

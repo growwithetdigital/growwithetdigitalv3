@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
-import { Menu, X, ArrowUpRight, Settings } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Settings, Sparkles, User as UserIcon } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface NavbarProps {
   activeSection: string;
   onOpenBooking: () => void;
   onOpenCalendar?: () => void;
   onOpenWorkspaceHub?: () => void;
+  user?: any;
+  profile?: UserProfile | null;
+  onOpenAuthModal?: () => void;
+  onOpenDashboard?: () => void;
 }
 
 export default function Navbar({ 
@@ -14,6 +19,10 @@ export default function Navbar({
   onOpenBooking, 
   onOpenCalendar,
   onOpenWorkspaceHub,
+  user,
+  profile,
+  onOpenAuthModal,
+  onOpenDashboard,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -148,7 +157,30 @@ export default function Navbar({
         </nav>
 
         {/* Right aligned call to action */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2.5">
+          {user ? (
+            <button
+              type="button"
+              onClick={onOpenDashboard}
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-brand-cyan border border-brand-cyan/40 font-display text-[10px] font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+              id="navbar-growth-os-btn"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-brand-cyan animate-pulse" />
+              <span>My Growth OS</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenAuthModal}
+              className="inline-flex items-center gap-2 bg-slate-900/90 hover:bg-slate-850 text-brand-cyan hover:text-white border border-brand-cyan/30 font-display text-[10px] font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+              id="navbar-auth-growth-os-btn"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-brand-cyan" />
+              <span>Sign In to Growth OS</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenCalendar || onOpenBooking}
@@ -242,6 +274,32 @@ export default function Navbar({
           </div>
 
           <div className="flex flex-col gap-2.5 pt-2">
+            {user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenDashboard) onOpenDashboard();
+                }}
+                className="flex items-center justify-center gap-2 w-full bg-slate-900 text-brand-cyan border border-brand-cyan/40 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer shadow-md transition-all"
+              >
+                <Sparkles className="w-4 h-4 text-brand-cyan" />
+                <span>My Growth OS Whiteboard</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenAuthModal) onOpenAuthModal();
+                }}
+                className="flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-slate-850 text-brand-cyan border border-brand-cyan/30 font-display text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-xl cursor-pointer transition-all shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-brand-cyan" />
+                <span>Sign In to Growth Operating System</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {

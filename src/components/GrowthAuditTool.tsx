@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Globe, Share2, MapPin, CheckCircle2, ArrowRight, 
   Sparkles, Cpu, ShieldCheck, Check, RefreshCw, Calendar,
-  Download, Lock, Info, X
+  Download, Lock, Info, X, Bookmark
 } from 'lucide-react';
-import { submitBookingToFirestore } from '../lib/firebase';
+import { submitBookingToFirestore, cacheAuditSession } from '../lib/firebase';
 
 interface GrowthAuditToolProps {
   onOpenBooking: () => void;
   onOpenCalendar?: () => void;
+  onOpenAuthModal?: () => void;
 }
 
 type AuditChannel = 'website' | 'social' | 'gbp';
@@ -25,7 +26,7 @@ interface AuditOption {
 
 const WEB3FORMS_ACCESS_KEY = (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || '0d9d7632-cf6b-4566-b29e-09b7b8bb7806';
 
-export default function GrowthAuditTool({ onOpenBooking, onOpenCalendar }: GrowthAuditToolProps) {
+export default function GrowthAuditTool({ onOpenBooking, onOpenCalendar, onOpenAuthModal }: GrowthAuditToolProps) {
   const [selectedChannel, setSelectedChannel] = useState<AuditChannel>('website');
   const [inputValue, setInputValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -114,6 +115,13 @@ export default function GrowthAuditTool({ onOpenBooking, onOpenCalendar }: Growt
     const runStep = () => {
       if (currentStepIndex >= steps.length) {
         setProgress(100);
+        cacheAuditSession({
+          website_url: inputValue,
+          business_name: inputValue.replace(/^https?:\/\//, '').split('/')[0] || 'My Business',
+          primary_niche: selectedChannel === 'website' ? 'Web & Organic Search' : selectedChannel === 'social' ? 'Social Media & Brand' : 'Local SEO & Maps',
+          growth_bottlenecks: ['Search Discovery', 'Mobile Speed Optimization', 'AI Overview Footprint'],
+          grade: grade,
+        });
         setTimeout(() => {
           setIsAnalyzing(false);
           setIsCompleted(true);
@@ -1010,28 +1018,102 @@ Prospect has seen Priority #3 to spark interest without giving away core infrast
 
                 </div>
 
-                {/* Primary Call To Action Banner */}
-                <div className="bg-gradient-to-r from-cyan-950/40 via-slate-900/80 to-slate-900/50 border border-brand-cyan/30 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-left shadow-2xl">
-                  <div className="max-w-xl">
-                    <span className="font-mono text-[9px] font-extrabold text-brand-cyan uppercase tracking-widest block mb-1">
-                      NEXT STEP: UNLOCK ALL 3 IMPROVEMENT PROTOCOLS
-                    </span>
-                    <h4 className="font-display text-base sm:text-lg font-black text-white uppercase tracking-tight mb-1.5">
-                      Schedule a 1-on-1 Strategy Session with Eric Thomas
-                    </h4>
-                    <p className="font-sans text-xs text-slate-300 leading-relaxed">
-                      Review your customized Grade {grade} findings live, unlock your remaining improvement areas, and get an exact implementation roadmap for your business.
-                    </p>
+                {/* Dedicated Growth Operating System Integration & Cadence Bridge */}
+                <div className="bg-gradient-to-b from-slate-900/95 via-slate-900 to-slate-950 border-2 border-brand-cyan/40 rounded-3xl p-6 sm:p-8 text-left shadow-2xl space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="font-mono text-[9px] font-black uppercase tracking-widest text-brand-cyan bg-cyan-950/80 px-2.5 py-1 rounded border border-brand-cyan/30">
+                          ET Digital Growth OS™
+                        </span>
+                        <span className="font-mono text-[9px] font-bold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">
+                          Grade {grade} Data Linked
+                        </span>
+                      </div>
+                      <h4 className="font-display text-lg sm:text-xl font-black text-white tracking-tight">
+                        Save Your Audit & Sign In to Growth Operating System™
+                      </h4>
+                    </div>
+
+                    {onOpenAuthModal && (
+                      <button
+                        type="button"
+                        onClick={onOpenAuthModal}
+                        className="inline-flex items-center justify-center gap-2 bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-xs font-black uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all shadow-md hover:shadow-cyan-950/50 cursor-pointer shrink-0"
+                        id="save-audit-to-growth-os-btn"
+                      >
+                        <Sparkles className="w-4 h-4 text-slate-950" />
+                        <span>Sign In to Growth Operating System</span>
+                      </button>
+                    )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
+                  <p className="font-sans text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+                    Your diagnostic audit data is ready to be saved directly into your account. On our <strong className="text-brand-cyan font-semibold">Free Tier</strong>, you unlock an instant quarterly growth package (1,000-word SEO pillar article, cross-platform social captions, and high-res graphic) every 90 days. When you want rapid pipeline compounding, graduate directly into our dedicated Monthly or Bi-Weekly execution schedules.
+                  </p>
+
+                  {/* Cadence Comparison Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-brand-cyan">
+                          Free Tier Baseline
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-slate-400">90 Days</span>
+                      </div>
+                      <div className="font-display text-sm font-bold text-white">Quarterly AI Pack</div>
+                      <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+                        1 SEO article + social captions + graphic every 90 days, audit tracking.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/30 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-400">
+                          Monthly Cadence
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-emerald-400">Steady Pipeline</span>
+                      </div>
+                      <div className="font-display text-sm font-bold text-white">4 Sprints / Month</div>
+                      <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+                        Continuous search authority, multi-channel syndication & monthly founder sprint.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/30 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-amber-300">
+                          Bi-Weekly Cadence
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-amber-400">Fast Velocity</span>
+                      </div>
+                      <div className="font-display text-sm font-bold text-white">14-Day Rapid Cycles</div>
+                      <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+                        High-velocity search capture, ongoing CRO testing & direct founder Slack syncs.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {onOpenAuthModal && (
+                      <button
+                        type="button"
+                        onClick={onOpenAuthModal}
+                        className="bg-cyan-950/90 hover:bg-cyan-900 border border-brand-cyan/60 text-brand-cyan hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                      >
+                        <Bookmark className="w-3.5 h-3.5 text-brand-cyan" />
+                        <span>Save Audit to Free Growth OS</span>
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={onOpenCalendar || onOpenBooking}
-                      className="bg-brand-cyan hover:bg-cyan-400 text-slate-950 font-display text-[10px] font-black uppercase tracking-widest px-6 py-4 rounded-xl transition-all cursor-pointer shadow-lg hover:shadow-cyan-950/50 flex items-center justify-center gap-2"
+                      className="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2"
                     >
-                      <Calendar className="w-4 h-4 text-slate-950" />
-                      <span>BOOK STRATEGY CALL WITH ERIC</span>
+                      <Calendar className="w-3.5 h-3.5 text-brand-cyan" />
+                      <span>Book Bi-Weekly / Monthly Strategy Call</span>
                     </button>
                     
                     <button
@@ -1040,15 +1122,15 @@ Prospect has seen Priority #3 to spark interest without giving away core infrast
                         setDownloadSuccess(false);
                         setIsDownloadModalOpen(true);
                       }}
-                      className="bg-slate-850 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-4 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-4 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2"
                     >
                       <Download className="w-3.5 h-3.5 text-brand-cyan" />
-                      <span>Download Branded Graphic</span>
+                      <span>Download Report Graphic</span>
                     </button>
 
                     <button
                       onClick={handleReset}
-                      className="bg-transparent hover:bg-white/[0.05] border border-white/10 text-slate-400 hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-4 py-4 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      className="bg-transparent hover:bg-white/[0.05] border border-white/10 text-slate-400 hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-3.5 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ml-auto"
                       title="Test another URL or channel"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />

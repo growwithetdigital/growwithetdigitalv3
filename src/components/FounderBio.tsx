@@ -228,7 +228,7 @@ export default function FounderBio({ onOpenBooking }: FounderBioProps) {
                     className="group inline-flex items-center justify-center bg-slate-900 hover:bg-slate-850 text-white font-display text-xs font-extrabold uppercase tracking-widest px-7 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                   >
                     <Mail className="w-4 h-4 mr-2 text-brand-cyan" />
-                    Email Me Directly
+                    Email Eric Directly
                   </a>
                 </>
               )}
