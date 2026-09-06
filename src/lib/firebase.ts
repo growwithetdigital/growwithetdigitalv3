@@ -444,6 +444,87 @@ export const bindPendingAuditToUser = async (uid: string): Promise<void> => {
   }
 };
 
+export const updateUserProfile = async (uid: string, profileData: Partial<UserProfile>): Promise<void> => {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    await setDoc(userDocRef, {
+      ...profileData,
+      updated_at: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
+    throw error;
+  }
+};
+
+export const fetchUserAudits = async (uid: string): Promise<AuditRecord[]> => {
+  try {
+    const q = query(collection(db, 'audits'));
+    const snap = await getDocs(q);
+    const results: AuditRecord[] = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.uid === uid) {
+        results.push({ id: d.id, ...data } as AuditRecord);
+      }
+    });
+
+    try {
+      const subSnap = await getDocs(collection(db, 'users', uid, 'audits'));
+      subSnap.forEach(d => {
+        const data = d.data();
+        if (!results.find(r => r.id === d.id)) {
+          results.push({ id: d.id, ...data } as AuditRecord);
+        }
+      });
+    } catch (e) {
+      // Subcollection optional
+    }
+
+    return results.sort((a, b) => {
+      const tA = a.created_at ? (typeof a.created_at === 'string' ? new Date(a.created_at).getTime() : a.created_at.toMillis ? a.created_at.toMillis() : 0) : 0;
+      const tB = b.created_at ? (typeof b.created_at === 'string' ? new Date(b.created_at).getTime() : b.created_at.toMillis ? b.created_at.toMillis() : 0) : 0;
+      return tB - tA;
+    });
+  } catch (error) {
+    console.warn('Error fetching user audits:', error);
+    return [];
+  }
+};
+
+export const saveUserAudit = async (uid: string, audit: Partial<AuditRecord>): Promise<string> => {
+  const auditId = audit.id || 'adt_' + Math.random().toString(36).substring(2, 15);
+  const auditPayload: AuditRecord = {
+    id: auditId,
+    uid: uid,
+    website_url: audit.website_url || '',
+    business_name: audit.business_name || '',
+    primary_niche: audit.primary_niche || '',
+    target_audience: audit.target_audience || '',
+    growth_bottlenecks: audit.growth_bottlenecks || [],
+    current_monthly_visitors: audit.current_monthly_visitors || '',
+    grade: audit.grade || 'B',
+    created_at: new Date().toISOString(),
+    overallScore: audit.overallScore || 78,
+    metrics: audit.metrics || {},
+    recommendations: audit.recommendations || []
+  };
+
+  try {
+    await setDoc(doc(db, 'audits', auditId), {
+      ...auditPayload,
+      created_at: serverTimestamp()
+    });
+    await setDoc(doc(db, 'users', uid, 'audits', auditId), {
+      ...auditPayload,
+      created_at: serverTimestamp()
+    });
+  } catch (e) {
+    console.error('Error saving user audit:', e);
+  }
+  return auditId;
+};
+
 export const checkUserGenerationEligibility = (profile: UserProfile | null): { eligible: boolean; daysRemaining: number } => {
   if (!profile) return { eligible: false, daysRemaining: 90 };
   if (profile.tier !== 'free') return { eligible: true, daysRemaining: 0 };

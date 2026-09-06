@@ -1049,47 +1049,38 @@ Prospect has seen Priority #3 to spark interest without giving away core infrast
                   </div>
 
                   <p className="font-sans text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
-                    Your diagnostic audit data is ready to be saved directly into your account. On our <strong className="text-brand-cyan font-semibold">Free Tier</strong>, you unlock an instant quarterly growth package (1,000-word SEO pillar article, cross-platform social captions, and high-res graphic) every 90 days. When you want rapid pipeline compounding, graduate directly into our dedicated Monthly or Bi-Weekly execution schedules.
+                    Your diagnostic audit findings are ready to be attached to your account. Sign in to your Growth OS to access your dedicated digital whiteboard, track historical channel benchmarks, and collaborate on your organic visibility roadmap with Eric Thomas.
                   </p>
 
-                  {/* Cadence Comparison Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-brand-cyan">
-                          Free Tier Baseline
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-slate-400">90 Days</span>
+                  {/* Feature highlights without tiers */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                      <div className="font-display text-xs font-bold text-brand-cyan uppercase tracking-wider flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-brand-cyan" />
+                        <span>Diagnostic Vault</span>
                       </div>
-                      <div className="font-display text-sm font-bold text-white">Quarterly AI Pack</div>
                       <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                        1 SEO article + social captions + graphic every 90 days, audit tracking.
+                        Retain your Grade {grade} benchmarks, Core Web Vitals, and channel scoring history.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/30 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-400">
-                          Monthly Cadence
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-emerald-400">Steady Pipeline</span>
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                      <div className="font-display text-xs font-bold text-brand-cyan uppercase tracking-wider flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-brand-cyan" />
+                        <span>Growth Whiteboard</span>
                       </div>
-                      <div className="font-display text-sm font-bold text-white">4 Sprints / Month</div>
                       <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                        Continuous search authority, multi-channel syndication & monthly founder sprint.
+                        Interactive collaboration space with strategic recommendations and priority milestones.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/30 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-amber-300">
-                          Bi-Weekly Cadence
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-amber-400">Fast Velocity</span>
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                      <div className="font-display text-xs font-bold text-brand-cyan uppercase tracking-wider flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-brand-cyan" />
+                        <span>AI Search Intelligence</span>
                       </div>
-                      <div className="font-display text-sm font-bold text-white">14-Day Rapid Cycles</div>
                       <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                        High-velocity search capture, ongoing CRO testing & direct founder Slack syncs.
+                        Actionable search and AEO optimization prompts tailored directly to your channel.
                       </p>
                     </div>
                   </div>
@@ -1103,7 +1094,7 @@ Prospect has seen Priority #3 to spark interest without giving away core infrast
                         className="bg-cyan-950/90 hover:bg-cyan-900 border border-brand-cyan/60 text-brand-cyan hover:text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2"
                       >
                         <Bookmark className="w-3.5 h-3.5 text-brand-cyan" />
-                        <span>Save Audit to Free Growth OS</span>
+                        <span>Save Audit to Growth OS</span>
                       </button>
                     )}
 
@@ -1113,7 +1104,7 @@ Prospect has seen Priority #3 to spark interest without giving away core infrast
                       className="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-display text-[10px] font-black uppercase tracking-widest px-5 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2"
                     >
                       <Calendar className="w-3.5 h-3.5 text-brand-cyan" />
-                      <span>Book Bi-Weekly / Monthly Strategy Call</span>
+                      <span>Book Strategy Call with Eric</span>
                     </button>
                     
                     <button

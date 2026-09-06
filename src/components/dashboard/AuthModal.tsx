@@ -130,12 +130,12 @@ export default function AuthModal({
           </div>
           <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">
             {mode === 'signin' && 'Sign In to Growth Operating System'}
-            {mode === 'signup' && 'Create Your Free Growth OS Account'}
+            {mode === 'signup' && 'Create Your Growth OS Account'}
             {mode === 'forgot' && 'Reset Your Password'}
           </h2>
           <p className="font-sans text-xs sm:text-sm text-slate-400">
-            {mode === 'signin' && 'Access your marketing whiteboard, quarterly AI content library, and growth cadence.'}
-            {mode === 'signup' && 'Includes 1 free 1,000-word SEO article & branded graphic every 90 days.'}
+            {mode === 'signin' && 'Access your strategic whiteboard, diagnostic records, and digital roadmap.'}
+            {mode === 'signup' && 'Get instant access to your digital whiteboard and real-time diagnostic vault.'}
             {mode === 'forgot' && 'Enter your email to receive a secure recovery link.'}
           </p>
         </div>
@@ -274,7 +274,7 @@ export default function AuthModal({
               <>
                 <span>
                   {mode === 'signin' && 'Sign In to Growth Operating System'}
-                  {mode === 'signup' && 'Create Free Growth OS Account'}
+                  {mode === 'signup' && 'Create Growth OS Account'}
                   {mode === 'forgot' && 'Send Reset Link'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function AuthModal({
                 onClick={() => setMode('signup')}
                 className="text-brand-cyan font-bold hover:underline cursor-pointer"
               >
-                Sign up free
+                Create an account
               </button>
             </p>
           ) : (

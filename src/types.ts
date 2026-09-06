@@ -52,7 +52,13 @@ export interface UserProfile {
   total_generations_count: number;
   audit_id?: string | null;
   business_name?: string;
+  contact?: string;
   website_url?: string;
+  location?: string;
+  mission_statement?: string;
+  competitor_website?: string;
+  brand_voice?: string;
+  target_audience?: string;
   industry?: string;
   brand_logo_url?: string;
   created_at?: any;
@@ -70,6 +76,16 @@ export interface AuditRecord {
   current_monthly_visitors?: string;
   grade?: string;
   created_at?: any;
+  overallScore?: number;
+  metrics?: {
+    mobileSpeed?: number;
+    desktopSpeed?: number;
+    seoHealth?: number;
+    securityScore?: number;
+    aeoScore?: number;
+    croScore?: number;
+  };
+  recommendations?: string[];
 }
 
 export interface GeneratedContentItem {
