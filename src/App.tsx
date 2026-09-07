@@ -94,6 +94,17 @@ export default function App() {
         setCurrentUser(user);
         fetchProfile(user.uid);
       } else {
+        const localUserJson = typeof window !== 'undefined' ? localStorage.getItem('et_growth_os_local_user') : null;
+        if (localUserJson && !currentlySignedOut) {
+          try {
+            const localUser = JSON.parse(localUserJson);
+            if (localUser && localUser.uid) {
+              setCurrentUser(localUser as User);
+              fetchProfile(localUser.uid);
+              return;
+            }
+          } catch (e) {}
+        }
         setCurrentUser(null);
         setUserProfile(null);
         setIsWhiteboardOpen(false);

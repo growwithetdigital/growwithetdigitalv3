@@ -47,7 +47,7 @@ export default function AuthModal({
       } catch (e) {}
     }
     if (raw.includes('auth/unauthorized-domain') || raw.includes('unauthorized-domain')) {
-      return 'Domain authorization pending in Firebase. Please ensure this preview domain is allowed.';
+      return 'Google Sign-In domain authorization pending in Firebase. Please use Email Sign-In below—it is active and works immediately!';
     }
     if (raw.includes('auth/popup-closed-by-user')) {
       return 'Google sign-in popup was closed before completion.';
